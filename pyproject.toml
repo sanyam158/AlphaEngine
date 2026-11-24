@@ -1,0 +1,83 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "alphaengine"
+version = "0.1.0"
+description = "Personal research, backtesting and paper-trading system for Indian equities (NSE/BSE)."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "sqlalchemy>=2.0.30",
+    "alembic>=1.13",
+    "psycopg[binary]>=3.1",
+    "structlog>=24.1",
+    "typer>=0.12",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "pyarrow>=16.0",
+    "duckdb>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "hypothesis>=6.100",
+    "mypy>=1.10",
+    "ruff>=0.5",
+    "pre-commit>=3.7",
+    "pandas-stubs>=2.2",
+]
+
+[project.scripts]
+alphaengine = "alphaengine.cli.main:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["alphaengine"]
+
+# ---------------------------------------------------------------- ruff
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["web", "migrations/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "N", "PL", "PT", "DTZ", "T20"]
+ignore = ["PLR0913", "PLR2004"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["PLR2004", "S101"]
+
+# ---------------------------------------------------------------- mypy
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = ["pydantic.mypy"]
+packages = ["alphaengine"]
+
+[[tool.mypy.overrides]]
+module = ["duckdb.*", "pyarrow.*"]
+ignore_missing_imports = true
+
+# ---------------------------------------------------------------- pytest
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --cov=alphaengine --cov-report=term-missing"
+markers = [
+    "integration: needs external services (Postgres via docker)",
+    "golden: regression backtests against stored snapshots",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["alphaengine"]
+omit = ["alphaengine/cli/*"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", "\\.\\.\\."]
