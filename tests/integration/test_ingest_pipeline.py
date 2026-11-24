@@ -168,6 +168,24 @@ def test_aborts_after_consecutive_errors_but_keeps_progress(
     assert summary.days_skipped == 2 and summary.days_ok == 7
 
 
+def test_pre2012_rows_join_renamed_history(tmp_path: Path, session_factory: SF) -> None:
+    """Old files have no ISIN; prices must still attach to the right company after a rename."""
+    nse = MockNse()
+    old_days = [date(2011, 11, 1), date(2011, 11, 2)]
+    for d in old_days:
+        nse.add(d, [Row("OLDNAME", "INE100A01011", 100.0)])
+        nse.pre2012.add(d)
+    nse.add(date(2011, 12, 1), [Row("OLDNAME", "INE100A01011", 101.0)])
+    nse.add(date(2011, 12, 2), [Row("NEWNAME", "INE100A01011", 102.0)])
+    ing = _ingestor(nse, tmp_path, session_factory)
+    summary = ing.run(old_days[0], date(2011, 12, 2))
+    assert summary.days_error == 0
+    assert summary.days_ok == 4
+    bars = load_prices(ing.store, session_factory, ["NEWNAME"], adjust="none")
+    assert list(bars["close"]) == [100.0, 100.0, 101.0, 102.0]
+    assert set(bars["symbol"]) == {"NEWNAME"}
+
+
 def test_bad_range(nse: MockNse, tmp_path: Path, session_factory: SF) -> None:
     with pytest.raises(ValueError, match="end"):
         _ingestor(nse, tmp_path, session_factory).run(DAYS[1], DAYS[0])

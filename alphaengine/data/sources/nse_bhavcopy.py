@@ -51,6 +51,8 @@ _LEGACY_MAP = {
     "ISIN": "isin",
     "TIMESTAMP": "date",
 }
+# Files before ~Dec 2011 have no ISIN / TOTALTRADES columns.
+_OPTIONAL = frozenset({"ISIN", "TOTALTRADES", "TtlNbOfTxsExctd"})
 _UDIFF_MAP = {
     "TckrSymb": "symbol",
     "SctySrs": "series",
@@ -128,9 +130,11 @@ class NseBhavcopySource:
                 raw = raw[raw["Sgmt"].str.strip() == "CM"]
         else:
             raise DataError(f"unknown bhavcopy format {payload.fmt!r}")
-        missing = set(mapping) - set(raw.columns)
+        missing = set(mapping) - set(raw.columns) - _OPTIONAL
         if missing:
             raise DataError(f"{payload.name}: missing columns {sorted(missing)}")
+        for col in set(mapping) - set(raw.columns):
+            raw[col] = pd.NA
         df = raw[list(mapping)].rename(columns=mapping)
         for col in ("symbol", "series", "isin"):
             df[col] = df[col].str.strip()

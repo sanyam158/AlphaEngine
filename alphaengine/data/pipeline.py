@@ -149,7 +149,8 @@ class BhavcopyIngestor:
                     self._flush(session, batch, summary.run_id)
                     raise DataSourceError(
                         f"aborting after {consecutive_errors} consecutive failures "
-                        f"(last: {res.message}); the source may be blocking requests"
+                        f"(last: {res.message}); the source may be blocking requests "
+                        "or its format changed"
                     )
                 if len(batch) >= self.batch_days:
                     self._flush(session, batch, summary.run_id)

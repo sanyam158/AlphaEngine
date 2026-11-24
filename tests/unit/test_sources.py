@@ -50,6 +50,17 @@ class TestBhavcopyParsing:
         assert rel["date"] == pd.Timestamp(D_OLD)
         assert rel["volume"] == 1000
 
+    def test_pre2012_legacy_without_isin_and_trades(self) -> None:
+        day = date(2010, 1, 4)
+        src = NseBhavcopySource(MockNse().fetcher())
+        text = legacy_csv(day, ROWS, pre2012=True)
+        payload = RawPayload("nse_bhavcopy", day, legacy_name(day), "legacy", text.encode())
+        df = src.parse(payload)
+        assert list(df["symbol"]) == ["M&M", "RELIANCE", "SOMEBE"]
+        assert df["isin"].isna().all()
+        assert df["trades"].isna().all()
+        assert (df["date"] == pd.Timestamp(day)).all()
+
     def test_udiff_ignores_other_segments(self) -> None:
         src = NseBhavcopySource(MockNse().fetcher())
         payload = RawPayload(

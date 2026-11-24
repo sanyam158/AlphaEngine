@@ -47,16 +47,22 @@ UDIFF_HEADER = (
 )
 
 
-def legacy_csv(day: date, rows: list[Row]) -> str:
-    ts = f"{day:%d}-{_MONTHS[day.month - 1]}-{day:%Y}"
-    lines = [LEGACY_HEADER]
+OLD_LEGACY_HEADER = (
+    "SYMBOL,SERIES,OPEN,HIGH,LOW,CLOSE,LAST,PREVCLOSE,TOTTRDQTY,TOTTRDVAL,TIMESTAMP,"
+)
+
+
+def legacy_csv(day: date, rows: list[Row], *, pre2012: bool = False) -> str:
+    """Legacy bhavcopy. ``pre2012`` mimics files before ~Dec 2011: no ISIN/TOTALTRADES columns
+    and day-of-month without zero padding (``4-JAN-2010``)."""
+    dd = str(day.day) if pre2012 else f"{day:%d}"
+    ts = f"{dd}-{_MONTHS[day.month - 1]}-{day:%Y}"
+    lines = [OLD_LEGACY_HEADER if pre2012 else LEGACY_HEADER]
     for r in rows:
         o, h, lo, c = r.ohlc()
         pc = r.prev_close if r.prev_close is not None else c
-        lines.append(
-            f"{r.symbol},{r.series},{o},{h},{lo},{c},{c},{pc},{r.volume},{r.volume * c},"
-            f"{ts},{r.trades},{r.isin},"
-        )
+        line = f"{r.symbol},{r.series},{o},{h},{lo},{c},{c},{pc},{r.volume},{r.volume * c},{ts},"
+        lines.append(line if pre2012 else f"{line}{r.trades},{r.isin},")
     return "\n".join(lines) + "\n"
 
 
@@ -91,6 +97,7 @@ class MockNse:
         self.days: dict[date, tuple[str, list[Row]]] = {}
         self.requests: list[str] = []
         self.fail_with: dict[date, int] = {}  # day -> HTTP status
+        self.pre2012: set[date] = set()  # days served in the old ISIN-less layout
 
     def add(self, day: date, rows: list[Row], fmt: str = "legacy") -> None:
         self.days[day] = (fmt, rows)
@@ -102,9 +109,8 @@ class MockNse:
             if day in self.fail_with and (legacy_name(day) in url or udiff_name(day) in url):
                 return httpx.Response(self.fail_with[day])
             if fmt == "legacy" and url.endswith(legacy_name(day)):
-                return httpx.Response(
-                    200, content=zip_text(legacy_name(day), legacy_csv(day, rows))
-                )
+                text = legacy_csv(day, rows, pre2012=day in self.pre2012)
+                return httpx.Response(200, content=zip_text(legacy_name(day), text))
             if fmt == "udiff" and url.endswith(udiff_name(day)):
                 return httpx.Response(200, content=zip_text(udiff_name(day), udiff_csv(day, rows)))
         for day, status in self.fail_with.items():
