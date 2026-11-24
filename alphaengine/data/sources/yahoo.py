@@ -1,8 +1,11 @@
 """Yahoo Finance adapter (optional extra: ``pip install -e .[yahoo]``).
 
 Used for **index levels** (Nifty 50 etc.) and **corporate actions** (splits/bonuses and
-dividends). Not used for equity prices: Yahoo's ``Close`` is already split-adjusted, while the
-curated store holds raw exchange prices and applies adjustments itself.
+dividends). Yahoo reports bonus issues as splits, so share-count events are recorded as
+``SPLIT_OR_BONUS``: fine for price adjustment, but they need classifying for tax lots.
+
+Not used for equity prices: Yahoo's ``Close`` is already split-adjusted, while the curated
+store holds raw exchange prices and applies adjustments itself.
 
 Yahoo reports dividends adjusted for *later* splits; :meth:`YahooSource.fetch_actions`
 converts them back to the raw per-share amount declared on the ex-date.
@@ -120,7 +123,7 @@ class YahooSource:
         split_dates = ex[splits > 0].to_numpy()
         split_ratios = splits[splits > 0].astype(float)
         for d, r in zip(split_dates, split_ratios, strict=True):
-            rows.append({"ex_date": d, "kind": "SPLIT", "ratio": float(r), "amount": None})
+            rows.append({"ex_date": d, "kind": "SPLIT_OR_BONUS", "ratio": float(r), "amount": None})
         for d, amt in zip(ex.to_numpy(), divs, strict=True):
             if amt <= 0:
                 continue

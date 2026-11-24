@@ -89,6 +89,28 @@ class TestCorporateActions:
             assert df["source"].iloc[1] == "t2"
             assert load_corporate_actions(s, ["NONE"]).empty
 
+    def test_classified_split_or_bonus_wins(self, session_factory: SF) -> None:
+        def row(kind: str) -> pd.DataFrame:
+            return pd.DataFrame(
+                [
+                    {
+                        "symbol": "ABC",
+                        "ex_date": "2024-10-28",
+                        "kind": kind,
+                        "ratio": 2,
+                        "amount": None,
+                    }
+                ]
+            )
+
+        with session_scope(session_factory) as s:
+            upsert_corporate_actions(s, row("SPLIT_OR_BONUS"), source="yahoo")
+            upsert_corporate_actions(s, row("BONUS"), source="manual")  # replaces ambiguous
+            upsert_corporate_actions(s, row("SPLIT_OR_BONUS"), source="yahoo")  # ignored
+        with session_scope(session_factory) as s:
+            df = load_corporate_actions(s, ["ABC"])
+            assert list(zip(df["kind"], df["source"], strict=True)) == [("BONUS", "manual")]
+
     @pytest.mark.parametrize(
         ("row", "msg"),
         [

@@ -23,7 +23,7 @@ from alphaengine.core.logging import get_logger
 log = get_logger(__name__)
 
 Adjust = Literal["none", "split", "total"]
-_SPLIT_KINDS = ("SPLIT", "BONUS")
+_SPLIT_KINDS = ("SPLIT", "BONUS", "SPLIT_OR_BONUS")
 
 
 def _suffix_factor(dates: np.ndarray, ex_dates: np.ndarray, mults: np.ndarray) -> np.ndarray:

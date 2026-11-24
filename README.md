@@ -11,7 +11,7 @@ See [docs/PLAN.md](docs/PLAN.md) for the architecture and the phased roadmap.
 ## Status
 - [x] Phase 0: foundations (tooling, CI, settings, logging, core types, DB + migrations)
 - [x] Phase 1: data layer ([guide](docs/DATA.md))
-- [ ] Phase 2: market model (costs, taxes)
+- [x] Phase 2: market model: costs, fills, tax lots, capital-gains tax ([guide](docs/MARKET.md))
 - [ ] Phase 3: strategy engine + features
 - [ ] Phase 4: backtest engine
 - [ ] Phase 5: robustness + event-driven engine

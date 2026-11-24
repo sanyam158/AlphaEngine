@@ -141,7 +141,7 @@ def check_prev_close(
     mism = b[consecutive & b["prev_close"].notna() & ((ratio - 1).abs() > cfg.prev_close_tolerance)]
     known: set[tuple[str, pd.Timestamp]] = set()
     if not actions.empty:
-        sa = actions[actions["kind"].isin(["SPLIT", "BONUS"])]
+        sa = actions[actions["kind"].isin(["SPLIT", "BONUS", "SPLIT_OR_BONUS"])]
         known = {
             (str(s), pd.Timestamp(e)) for s, e in zip(sa["symbol"], sa["ex_date"], strict=True)
         }

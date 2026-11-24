@@ -242,7 +242,7 @@ class TestYahoo:
 
     def test_actions_unadjust_dividends(self) -> None:
         acts = YahooSource(history=_yahoo_hist, actions=_yahoo_actions).fetch_actions(Symbol("ABC"))
-        assert list(acts["kind"]) == ["DIVIDEND", "SPLIT", "DIVIDEND"]
+        assert list(acts["kind"]) == ["DIVIDEND", "SPLIT_OR_BONUS", "DIVIDEND"]
         assert acts["amount"].iloc[0] == 10.0
         assert acts["ratio"].iloc[1] == 2.0
         assert acts["amount"].iloc[2] == 3.0

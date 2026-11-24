@@ -2,19 +2,23 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from datetime import date, timedelta
+from decimal import Decimal
 
 import pandas as pd
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
+from alphaengine.core.logging import get_logger
 from alphaengine.data.adjust import Adjust, apply_adjustment
 from alphaengine.data.db import session_scope
 from alphaengine.data.models import Instrument, SymbolHistory
 from alphaengine.data.repositories import isin_to_current_symbol, load_corporate_actions
 from alphaengine.data.schema import KEY
 from alphaengine.data.store import PriceStore
+
+log = get_logger(__name__)
 
 _BUFFER = timedelta(days=15)  # history before `start` needed for dividend prev-close lookup
 
@@ -77,3 +81,33 @@ def load_prices(
 def to_panel(bars: pd.DataFrame, field: str = "close") -> pd.DataFrame:
     """Wide date × symbol frame for vectorized research."""
     return bars.pivot(index="date", columns="symbol", values=field).sort_index()
+
+
+def grandfather_fmv_lookup(
+    store: PriceStore, actions: pd.DataFrame | None = None
+) -> Callable[[str], Decimal | None]:
+    """FMV for LTCG grandfathering: highest price traded on 2018-01-31 (sec 112A), per share
+    *as lots are held today*.
+
+    Splits after that date multiply lot quantities, so the FMV is divided by their ratios;
+    bonuses leave existing lots alone (bonus shares are new zero-cost lots). A symbol with an
+    unclassified ``SPLIT_OR_BONUS`` after the cutoff gets no FMV (``None``): tax is then
+    computed without grandfathering, which errs on the high side, and a warning is logged.
+    """
+    day = date(2018, 1, 31)
+    bars = store.read(start=day, end=day, columns=["high"])
+    highs = {str(s): Decimal(str(h)) for s, h in zip(bars["symbol"], bars["high"], strict=True)}
+    if actions is not None and not actions.empty:
+        later = actions[pd.to_datetime(actions["ex_date"]) > pd.Timestamp(day)]
+        for sym, kind, ratio in zip(later["symbol"], later["kind"], later["ratio"], strict=True):
+            if sym not in highs:
+                continue
+            if kind == "SPLIT":
+                highs[sym] = highs[sym] / Decimal(str(ratio))
+            elif kind == "SPLIT_OR_BONUS":
+                log.warning(
+                    "unclassified split/bonus after 2018-01-31; grandfathering skipped",
+                    symbol=sym,
+                )
+                del highs[sym]
+    return highs.get

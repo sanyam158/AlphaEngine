@@ -28,7 +28,10 @@ from alphaengine.data.sources.nse_indices import Constituent
 
 log = get_logger(__name__)
 
-ACTION_KINDS = frozenset({"SPLIT", "BONUS", "DIVIDEND"})
+ACTION_KINDS = frozenset({"SPLIT", "BONUS", "SPLIT_OR_BONUS", "DIVIDEND"})
+# Share-count changes. SPLIT_OR_BONUS = source can't tell which (e.g. Yahoo); prices adjust the
+# same way, but tax treatment differs, so a classified SPLIT/BONUS replaces it.
+SHARE_KINDS = frozenset({"SPLIT", "BONUS", "SPLIT_OR_BONUS"})
 
 
 # ---------------------------------------------------------------- symbol master
@@ -112,7 +115,7 @@ def _validate_action(row: Mapping[Any, Any]) -> tuple[str, date, str, float | No
         raise DataError(f"{symbol} {ex_date}: unknown action kind {kind!r}")
     ratio = None if pd.isna(row.get("ratio")) else float(row["ratio"])
     amount = None if pd.isna(row.get("amount")) else float(row["amount"])
-    if kind in {"SPLIT", "BONUS"} and (ratio is None or ratio <= 0 or ratio == 1):
+    if kind in SHARE_KINDS and (ratio is None or ratio <= 0 or ratio == 1):
         raise DataError(f"{symbol} {ex_date}: {kind} needs ratio > 0 and != 1, got {ratio}")
     if kind == "DIVIDEND" and (amount is None or amount <= 0):
         raise DataError(f"{symbol} {ex_date}: DIVIDEND needs amount > 0, got {amount}")
@@ -127,6 +130,18 @@ def upsert_corporate_actions(
     for row in actions.to_dict("records"):
         symbol, ex_date, kind, ratio, amount = _validate_action(row)
         src = source or str(row.get("source") or "manual")
+        if kind in SHARE_KINDS:
+            same_day = session.scalars(
+                select(CorporateAction).where(
+                    CorporateAction.symbol == symbol,
+                    CorporateAction.ex_date == ex_date,
+                    CorporateAction.kind.in_(SHARE_KINDS - {kind}),
+                )
+            ).all()
+            if kind == "SPLIT_OR_BONUS" and same_day:
+                continue  # already classified: keep the specific record
+            for other in same_day:  # a classified record replaces an ambiguous one
+                session.delete(other)
         existing = session.scalars(
             select(CorporateAction).where(
                 CorporateAction.symbol == symbol,
