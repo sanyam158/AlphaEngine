@@ -12,6 +12,12 @@ from typing import Any, cast
 import structlog
 
 
+def _stderr_logger_factory(*_args: Any) -> structlog.PrintLogger:
+    """Resolve ``sys.stderr`` at call time so redirected/closed streams (tests, CLI runners)
+    never get captured permanently."""
+    return structlog.PrintLogger(file=sys.stderr)
+
+
 def configure_logging(level: str = "INFO", json: bool = False) -> None:
     """Configure stdlib logging and structlog. Safe to call more than once."""
     shared: list[structlog.types.Processor] = [
@@ -27,7 +33,7 @@ def configure_logging(level: str = "INFO", json: bool = False) -> None:
     structlog.configure(
         processors=[*shared, renderer],
         wrapper_class=structlog.make_filtering_bound_logger(logging.getLevelName(level)),
-        logger_factory=structlog.PrintLoggerFactory(file=sys.stderr),
+        logger_factory=_stderr_logger_factory,
         cache_logger_on_first_use=False,
     )
     logging.basicConfig(level=level, stream=sys.stderr, format="%(message)s", force=True)

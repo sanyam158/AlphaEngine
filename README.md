@@ -10,7 +10,7 @@ See [docs/PLAN.md](docs/PLAN.md) for the architecture and the phased roadmap.
 
 ## Status
 - [x] Phase 0: foundations (tooling, CI, settings, logging, core types, DB + migrations)
-- [ ] Phase 1: data layer
+- [x] Phase 1: data layer ([guide](docs/DATA.md))
 - [ ] Phase 2: market model (costs, taxes)
 - [ ] Phase 3: strategy engine + features
 - [ ] Phase 4: backtest engine
@@ -22,9 +22,11 @@ See [docs/PLAN.md](docs/PLAN.md) for the architecture and the phased roadmap.
 ## Quick start
 ```bash
 python -m venv .venv
-.venv/Scripts/pip install -e ".[dev]"      # Windows; use .venv/bin on macOS/Linux
+.venv/Scripts/pip install -e ".[dev,yahoo]"   # Windows; use .venv/bin on macOS/Linux
 cp .env.example .env
 docker compose -f infra/docker-compose.yml up -d   # optional: Postgres (SQLite works too)
 alphaengine db upgrade
+alphaengine ingest bhavcopy --start 2024-01-01
+alphaengine data quality
 pytest -m "not integration"
 ```

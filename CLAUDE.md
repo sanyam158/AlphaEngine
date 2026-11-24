@@ -4,7 +4,7 @@ Personal research, backtesting and paper-trading system for Indian equities (NSE
 The master plan and phase roadmap live in `docs/PLAN.md`; keep it updated when scope changes.
 
 ## Commands
-- Setup: `python -m venv .venv && .venv/Scripts/pip install -e ".[dev]"` (uv-compatible `pyproject.toml`)
+- Setup: `python -m venv .venv && .venv/Scripts/pip install -e ".[dev,yahoo]"` (uv-compatible `pyproject.toml`)
 - Lint/format: `ruff check . && ruff format --check .`
 - Types: `mypy` (strict, configured in pyproject)
 - Tests: `pytest -m "not integration"`; integration needs `ALPHAENGINE_TEST_POSTGRES_URL`
@@ -23,5 +23,8 @@ The master plan and phase roadmap live in `docs/PLAN.md`; keep it updated when s
   / domain errors from `core.errors`.
 - No look-ahead: any feature/signal must only use data available at its as-of date; add a
   truncation test for every new feature.
-- Tests never hit the network: use recorded fixtures.
+- Tests never hit the network: use `tests/helpers.py` (MockNse, synthetic bars). Live smoke
+  tests live in `tests/network` and run only with `ALPHAENGINE_RUN_NETWORK=1`.
+- New price sources implement `DailyBarSource` and must be added to `tests/contract`.
+- Curated prices are raw; adjust only at read time (`data.prices.load_prices`). See docs/DATA.md.
 - Work on feature branches per phase; never commit `.env` or data under `var/`.
