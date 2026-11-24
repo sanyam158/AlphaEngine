@@ -61,6 +61,16 @@ class TestBhavcopyParsing:
         assert df["trades"].isna().all()
         assert (df["date"] == pd.Timestamp(day)).all()
 
+    def test_two_digit_year_dates_and_unknown_formats(self) -> None:
+        day = date(2020, 7, 13)
+        src = NseBhavcopySource(MockNse().fetcher())
+        text = legacy_csv(day, ROWS).replace("13-JUL-2020", "13-Jul-20")
+        df = src.parse(RawPayload("x", day, legacy_name(day), "legacy", text.encode()))
+        assert (df["date"] == pd.Timestamp(day)).all()
+        bad = legacy_csv(day, ROWS).replace("13-JUL-2020", "2020/07/13")
+        with pytest.raises(DataError, match="unrecognised date format"):
+            src.parse(RawPayload("x", day, legacy_name(day), "legacy", bad.encode()))
+
     def test_udiff_ignores_other_segments(self) -> None:
         src = NseBhavcopySource(MockNse().fetcher())
         payload = RawPayload(

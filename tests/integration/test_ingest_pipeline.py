@@ -186,6 +186,24 @@ def test_pre2012_rows_join_renamed_history(tmp_path: Path, session_factory: SF) 
     assert set(bars["symbol"]) == {"NEWNAME"}
 
 
+def test_unexpected_parse_failure_is_a_day_error(
+    nse: MockNse, tmp_path: Path, session_factory: SF, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ing = _ingestor(nse, tmp_path, session_factory)
+    real_parse = ing.source.parse
+
+    def flaky(payload):  # type: ignore[no-untyped-def]
+        if payload.day == DAYS[1]:
+            raise ValueError("weird file")
+        return real_parse(payload)
+
+    monkeypatch.setattr(ing.source, "parse", flaky)
+    summary = ing.run(DAYS[0], DAYS[3])
+    assert summary.days_error == 1
+    assert "could not parse" in summary.errors[0]
+    assert summary.days_ok == 2
+
+
 def test_bad_range(nse: MockNse, tmp_path: Path, session_factory: SF) -> None:
     with pytest.raises(ValueError, match="end"):
         _ingestor(nse, tmp_path, session_factory).run(DAYS[1], DAYS[0])

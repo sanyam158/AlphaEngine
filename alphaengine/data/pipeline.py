@@ -14,7 +14,7 @@ from datetime import date
 import pandas as pd
 from sqlalchemy.orm import Session, sessionmaker
 
-from alphaengine.core.errors import AlphaEngineError, DataSourceError
+from alphaengine.core.errors import AlphaEngineError, DataError, DataSourceError
 from alphaengine.core.ids import new_id
 from alphaengine.core.logging import get_logger
 from alphaengine.core.types import Symbol
@@ -110,7 +110,12 @@ class BhavcopyIngestor:
         payload = self._load_payload(day)
         if payload is None:
             return _DayResult(day, "no_data")
-        result = validate_bars(self.source.parse(payload))
+        try:
+            result = validate_bars(self.source.parse(payload))
+        except AlphaEngineError:
+            raise
+        except Exception as exc:  # unexpected file content must not kill a long backfill
+            raise DataError(f"{payload.name}: could not parse: {exc!r}") from exc
         registry.observe(day, result.clean)
         return _DayResult(day, "ok", result.clean, len(result.clean), result.n_rejected)
 

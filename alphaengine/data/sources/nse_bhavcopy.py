@@ -51,6 +51,8 @@ _LEGACY_MAP = {
     "ISIN": "isin",
     "TIMESTAMP": "date",
 }
+# Seen in legacy files: 04-JAN-2010, 4-JAN-2010, 13-Jul-20 (mid-2020 files use 2-digit years).
+_LEGACY_DATE_FORMATS: tuple[str, ...] = ("%d-%b-%Y", "%d-%b-%y")
 # Files before ~Dec 2011 have no ISIN / TOTALTRADES columns.
 _OPTIONAL = frozenset({"ISIN", "TOTALTRADES", "TtlNbOfTxsExctd"})
 _UDIFF_MAP = {
@@ -123,9 +125,9 @@ class NseBhavcopySource:
         raw.columns = [str(c).strip() for c in raw.columns]
         raw = raw.loc[:, [c for c in raw.columns if c and not c.startswith("Unnamed")]]
         if payload.fmt == "legacy":
-            mapping, date_fmt = _LEGACY_MAP, "%d-%b-%Y"
+            mapping, date_fmts = _LEGACY_MAP, _LEGACY_DATE_FORMATS
         elif payload.fmt == "udiff":
-            mapping, date_fmt = _UDIFF_MAP, "%Y-%m-%d"
+            mapping, date_fmts = _UDIFF_MAP, ("%Y-%m-%d",)
             if "Sgmt" in raw.columns:
                 raw = raw[raw["Sgmt"].str.strip() == "CM"]
         else:
@@ -141,7 +143,7 @@ class NseBhavcopySource:
         df = df[df["series"].isin(self.series)]
         if self.exclude_rights_entitlements:
             df = df[~df["symbol"].str.contains(_RIGHTS_ENTITLEMENT, regex=True, na=False)]
-        df["date"] = pd.to_datetime(df["date"].str.strip(), format=date_fmt)
+        df["date"] = _parse_dates(df["date"].str.strip(), date_fmts, payload.name)
         if not df.empty and set(df["date"].dt.date) != {payload.day}:
             raise DataError(f"{payload.name}: file dates do not match requested day {payload.day}")
         return coerce_bars(df).sort_values(["date", "symbol"]).reset_index(drop=True)
@@ -162,6 +164,16 @@ class NseBhavcopySource:
         if symbols is not None:
             out = out[out["symbol"].isin(list(symbols))]
         return out[BAR_COLUMNS].reset_index(drop=True)
+
+
+def _parse_dates(values: pd.Series, formats: Sequence[str], name: str) -> pd.Series:
+    """Parse with the first format that matches every value (formats are tried in order)."""
+    for fmt in formats:
+        parsed = pd.to_datetime(values, format=fmt, errors="coerce")
+        if parsed.notna().all():
+            return parsed
+    sample = values[pd.to_datetime(values, format=formats[0], errors="coerce").isna()].head(1)
+    raise DataError(f"{name}: unrecognised date format, e.g. {sample.tolist()}")
 
 
 def _unzip_text(content: bytes) -> str:
