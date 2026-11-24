@@ -130,6 +130,17 @@ class TestQuality:
         s = summarize(issues)
         assert set(s) == {"info", "warning", "error"}
 
+    def test_weekend_special_session_is_lenient(self) -> None:
+        bars = make_bars({f"S{i:02d}": [10.0] * 10 for i in range(10)})
+        sunday = pd.Timestamp("2024-01-07")  # short special session: only S00 traded
+        special = bars[bars["symbol"] == "S00"].head(1).assign(date=sunday)
+        frame = pd.concat([bars, special], ignore_index=True)
+        days = sorted(set(frame["date"].dt.date))
+        issues = run_checks(frame, days)
+        assert not [i for i in issues if i.check == "missing_days"]
+        low = [i for i in issues if i.check == "low_coverage"]
+        assert [(i.trade_date, i.severity) for i in low] == [(sunday.date(), "warning")]
+
     def test_low_coverage(self) -> None:
         spec = {f"S{i:02d}": [10.0] * 10 for i in range(10)}
         bars = make_bars(spec)

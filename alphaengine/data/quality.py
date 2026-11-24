@@ -68,10 +68,16 @@ def check_zero_volume(bars: pd.DataFrame) -> list[Issue]:
 
 
 def check_gaps(bars: pd.DataFrame, market_days: Sequence[date]) -> list[Issue]:
-    """Symbols missing on market days between their first and last print."""
+    """Symbols missing on market days between their first and last print.
+
+    Pass regular sessions only: in short weekend special sessions (Muhurat, Budget day) many
+    illiquid stocks legitimately don't trade."""
     if bars.empty or not market_days:
         return []
     md = np.array(sorted(pd.Timestamp(d) for d in market_days), dtype="datetime64[ns]")
+    bars = bars[bars["date"].isin(md)]
+    if bars.empty:
+        return []
     g = bars.groupby("symbol")["date"].agg(["min", "max", "size"])
     lo = np.searchsorted(md, g["min"].to_numpy(dtype="datetime64[ns]"), side="left")
     hi = np.searchsorted(md, g["max"].to_numpy(dtype="datetime64[ns]"), side="right")
@@ -165,7 +171,8 @@ def check_stale(bars: pd.DataFrame, market_days: Sequence[date], cfg: QualityCon
 
 
 def check_coverage(bars: pd.DataFrame, cfg: QualityConfig) -> list[Issue]:
-    """Days with far fewer symbols than usual indicate a truncated or partial file."""
+    """Days with far fewer symbols than usual indicate a truncated or partial file (an error).
+    On weekends this is expected for short special sessions, so it is only a warning."""
     counts = bars.groupby("date")["symbol"].size().sort_index()
     if counts.size < 5:
         return []
@@ -173,7 +180,13 @@ def check_coverage(bars: pd.DataFrame, cfg: QualityConfig) -> list[Issue]:
     low = counts[counts < cfg.coverage_ratio * baseline]
     typical = baseline[low.index]
     return [
-        Issue("low_coverage", "error", f"only {n} symbols vs typical {b:.0f}", None, _d(d))
+        Issue(
+            "low_coverage",
+            "warning" if _d(d).weekday() >= 5 else "error",
+            f"only {n} symbols vs typical {b:.0f}",
+            None,
+            _d(d),
+        )
         for d, n, b in zip(low.index, low.to_numpy(), typical.to_numpy(), strict=True)
     ]
 
@@ -194,7 +207,7 @@ def run_checks(
         *check_duplicates(bars),
         *check_ohlc(bars),
         *check_coverage(bars, cfg),
-        *check_gaps(bars, market_days),
+        *check_gaps(bars, [d for d in market_days if d.weekday() < 5]),
         *check_spikes(bars.drop_duplicates(KEY), acts, cfg),
         *check_prev_close(bars.drop_duplicates(KEY), acts, market_days, cfg),
         *check_stale(bars, market_days, cfg),
