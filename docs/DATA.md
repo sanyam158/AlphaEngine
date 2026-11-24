@@ -27,8 +27,9 @@ alphaengine import index-members history.csv             # index_name,symbol,sta
 alphaengine data quality
 alphaengine data info
 ```
-A full backfill from 2010 is about 4,000 requests. At the polite default of about 3 requests/second
-(slower in practice), allow 30–60 minutes. It stops by itself after 5 failures in a row, which
+A full backfill from 2010 checks about 6,000 days. Weekends are included because NSE holds special
+sessions on them (Budget-day Saturdays, Diwali Muhurat); `--no-weekends` skips them. Allow
+about an hour. It stops by itself after 5 failures in a row, which
 usually means NSE is throttling; rerun later and it resumes where it stopped.
 
 ## Using prices in research

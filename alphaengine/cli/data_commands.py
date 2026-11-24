@@ -53,8 +53,12 @@ def ingest_bhavcopy(
     end: EndOpt = None,
     force: Annotated[bool, typer.Option(help="Re-ingest days already done")] = False,
     include_weekends: Annotated[
-        bool, typer.Option(help="Also try Sat/Sun (special sessions)")
-    ] = False,
+        bool,
+        typer.Option(
+            "--weekends/--no-weekends",
+            help="Also try Sat/Sun: NSE holds special sessions (Budget day, Muhurat) on weekends",
+        ),
+    ] = True,
 ) -> None:
     """Backfill / update NSE cash-market bhavcopies (resumable)."""
     ctx = build_context()
