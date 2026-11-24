@@ -258,7 +258,7 @@ def test_cli_end_to_end(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, nse: Mo
     assert "equities: empty" in r.output
     r = runner.invoke(app, ["ingest", "bhavcopy", "--start", "2024-07-01", "--end", "2024-07-12"])
     assert r.exit_code == 0, r.output
-    assert "ok=9 no_data=1" in r.output
+    assert "ok=9 no_data=3" in r.output  # holiday + one weekend (Sat/Sun 6-7 Jul)
     r = runner.invoke(app, ["data", "info"])
     assert "2024-07-01 to 2024-07-12, 9 days" in r.output
     r = runner.invoke(app, ["data", "quality"])
