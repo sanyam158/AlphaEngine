@@ -66,6 +66,9 @@ def test_paper_portfolio_lifecycle(ctx: AppContext) -> None:
     assert res.orders_created == 3
     assert "NIFTYBEES" in res.describe()
     assert svc.rebalance("paper1", t0).orders_created == 0  # idempotent for the signal date
+    # a newer plan replaces orders that are still unfilled
+    preview = svc.rebalance("paper1", d[299 + 2], dry_run=True)
+    assert any("will be replaced" in f.message for f in preview.findings)
     rep = svc.process_day("paper1", t1)
     assert any("filled BUY" in n for n in rep.notes)
     sm = svc.summary("paper1", t1)

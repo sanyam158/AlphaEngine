@@ -67,3 +67,18 @@ def db_downgrade(revision: str) -> None:
 
 if __name__ == "__main__":  # pragma: no cover
     app()
+
+
+@app.command()
+def serve(
+    host: str = typer.Option(
+        "127.0.0.1", help="Bind address (set ALPHAENGINE_API_KEY before exposing)"
+    ),
+    port: int = typer.Option(8000),
+) -> None:
+    """Run the API and dashboard at http://HOST:PORT."""
+    import uvicorn  # noqa: PLC0415
+
+    from alphaengine.api.app import create_app  # noqa: PLC0415
+
+    uvicorn.run(create_app(), host=host, port=port, log_level="info")

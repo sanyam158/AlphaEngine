@@ -28,3 +28,6 @@ web/dist/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Local tooling
+.claude/

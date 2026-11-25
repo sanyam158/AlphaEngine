@@ -293,3 +293,18 @@ class JobRun(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
+
+
+class JournalEntry(Base):
+    """Free-text notes on decisions and trades: the learning log."""
+
+    __tablename__ = "journal_entries"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
+    )
+    portfolio: Mapped[str | None] = mapped_column(String(64), index=True)
+    symbol: Mapped[str | None] = mapped_column(String(20))
+    tags: Mapped[str | None] = mapped_column(String(200))
+    text: Mapped[str] = mapped_column(Text, nullable=False)

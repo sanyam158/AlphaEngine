@@ -333,9 +333,23 @@ class PortfolioService:
             etfs,
         )
         created = 0
-        if not dry_run and not any(f.level == "error" for f in findings):
+        with session_scope(self.ctx.session_factory) as s:
+            n_stale = sum(
+                o.signal_date < day.date() for o in open_orders(s, get_portfolio(s, name))
+            )
+        blocked = any(f.level == "error" for f in findings)
+        if n_stale:
+            # The plan ignores unfilled orders, so they must not survive alongside it.
+            verb = "will be replaced" if dry_run or blocked else "were replaced"
+            findings.append(
+                Finding("warning", f"{n_stale} unfilled order(s) from earlier signals {verb}")
+            )
+        if not dry_run and not blocked:
             with session_scope(self.ctx.session_factory) as s:
                 rec = get_portfolio(s, name)
+                for o in open_orders(s, rec):
+                    if o.signal_date < day.date():
+                        cancel(o, "superseded by a newer rebalance")
                 new = []
                 for t in plan.trades:
                     key = f"{pid}:{day.date()}:{t.symbol}:{t.side.value}"

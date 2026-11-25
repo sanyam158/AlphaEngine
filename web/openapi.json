@@ -1,0 +1,2928 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "AlphaEngine",
+  "description": "Research, backtesting and paper trading for NSE.",
+  "version": "0.1.0"
+ },
+ "paths": {
+  "/api/health": {
+   "get": {
+    "tags": [
+     "meta"
+    ],
+    "summary": "Health",
+    "operationId": "health_api_health_get",
+    "parameters": [
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Health"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/data/health": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Data Health",
+    "operationId": "data_health_api_data_health_get",
+    "parameters": [
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/DataHealth"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/data/prices/{symbol}": {
+   "get": {
+    "tags": [
+     "data"
+    ],
+    "summary": "Prices",
+    "description": "Raw closing prices (equities first, then indices).",
+    "operationId": "prices_api_data_prices__symbol__get",
+    "parameters": [
+     {
+      "name": "symbol",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Symbol"
+      }
+     },
+     {
+      "name": "start",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Start"
+      }
+     },
+     {
+      "name": "end",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "End"
+      }
+     },
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/SeriesPoint"
+         },
+         "title": "Response Prices Api Data Prices  Symbol  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/strategies": {
+   "get": {
+    "tags": [
+     "strategies"
+    ],
+    "summary": "List Strategies",
+    "operationId": "list_strategies_api_strategies_get",
+    "parameters": [
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/StrategySummary"
+         },
+         "title": "Response List Strategies Api Strategies Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/strategies/{name}": {
+   "get": {
+    "tags": [
+     "strategies"
+    ],
+    "summary": "Get Strategy",
+    "operationId": "get_strategy_api_strategies__name__get",
+    "parameters": [
+     {
+      "name": "name",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Name"
+      }
+     },
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/StrategyDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/strategies/validate": {
+   "post": {
+    "tags": [
+     "strategies"
+    ],
+    "summary": "Validate",
+    "operationId": "validate_api_strategies_validate_post",
+    "parameters": [
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ValidateRequest"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ValidateResult"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/strategies/{name}/signals": {
+   "get": {
+    "tags": [
+     "strategies"
+    ],
+    "summary": "Signals",
+    "operationId": "signals_api_strategies__name__signals_get",
+    "parameters": [
+     {
+      "name": "name",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Name"
+      }
+     },
+     {
+      "name": "as_of",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "As Of"
+      }
+     },
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/SignalsOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/backtests": {
+   "get": {
+    "tags": [
+     "backtests"
+    ],
+    "summary": "List Backtests",
+    "operationId": "list_backtests_api_backtests_get",
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "default": 50,
+       "title": "Limit"
+      }
+     },
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/BacktestSummary"
+         },
+         "title": "Response List Backtests Api Backtests Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "backtests"
+    ],
+    "summary": "Start Backtest",
+    "operationId": "start_backtest_api_backtests_post",
+    "parameters": [
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/BacktestRequest"
+       }
+      }
+     }
+    },
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/BacktestJob"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/backtests/jobs/{job_id}": {
+   "get": {
+    "tags": [
+     "backtests"
+    ],
+    "summary": "Job Status",
+    "operationId": "job_status_api_backtests_jobs__job_id__get",
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Job Id"
+      }
+     },
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/BacktestJob"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/backtests/{run_id}": {
+   "get": {
+    "tags": [
+     "backtests"
+    ],
+    "summary": "Get Backtest",
+    "operationId": "get_backtest_api_backtests__run_id__get",
+    "parameters": [
+     {
+      "name": "run_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Run Id"
+      }
+     },
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/BacktestDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/portfolios": {
+   "get": {
+    "tags": [
+     "portfolios"
+    ],
+    "summary": "List All",
+    "operationId": "list_all_api_portfolios_get",
+    "parameters": [
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/PortfolioSummary"
+         },
+         "title": "Response List All Api Portfolios Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "portfolios"
+    ],
+    "summary": "Create",
+    "operationId": "create_api_portfolios_post",
+    "parameters": [
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CreatePortfolio"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PortfolioSummary"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/portfolios/{name}": {
+   "get": {
+    "tags": [
+     "portfolios"
+    ],
+    "summary": "Detail",
+    "operationId": "detail_api_portfolios__name__get",
+    "parameters": [
+     {
+      "name": "name",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Name"
+      }
+     },
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PortfolioDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/portfolios/{name}/rebalance": {
+   "post": {
+    "tags": [
+     "portfolios"
+    ],
+    "summary": "Rebalance",
+    "operationId": "rebalance_api_portfolios__name__rebalance_post",
+    "parameters": [
+     {
+      "name": "name",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Name"
+      }
+     },
+     {
+      "name": "dry_run",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": true,
+       "title": "Dry Run"
+      }
+     },
+     {
+      "name": "as_of",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "format": "date"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "As Of"
+      }
+     },
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RebalanceOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/portfolios/{name}/{action}": {
+   "post": {
+    "tags": [
+     "portfolios"
+    ],
+    "summary": "Set Active",
+    "operationId": "set_active_api_portfolios__name___action__post",
+    "parameters": [
+     {
+      "name": "name",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Name"
+      }
+     },
+     {
+      "name": "action",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Action"
+      }
+     },
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PortfolioSummary"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/portfolios/{name}/tax": {
+   "get": {
+    "tags": [
+     "portfolios"
+    ],
+    "summary": "Tax",
+    "operationId": "tax_api_portfolios__name__tax_get",
+    "parameters": [
+     {
+      "name": "name",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Name"
+      }
+     },
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/TaxYear"
+         },
+         "title": "Response Tax Api Portfolios  Name  Tax Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/orders/{order_id}/fill": {
+   "post": {
+    "tags": [
+     "portfolios"
+    ],
+    "summary": "Fill",
+    "operationId": "fill_api_orders__order_id__fill_post",
+    "parameters": [
+     {
+      "name": "order_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Order Id"
+      }
+     },
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FillRequest"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/OrderOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/orders/{order_id}/cancel": {
+   "post": {
+    "tags": [
+     "portfolios"
+    ],
+    "summary": "Cancel",
+    "operationId": "cancel_api_orders__order_id__cancel_post",
+    "parameters": [
+     {
+      "name": "order_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "title": "Order Id"
+      }
+     },
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/OrderOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/journal": {
+   "get": {
+    "tags": [
+     "portfolios",
+     "journal"
+    ],
+    "summary": "Journal",
+    "operationId": "journal_api_journal_get",
+    "parameters": [
+     {
+      "name": "portfolio",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Portfolio"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "default": 100,
+       "title": "Limit"
+      }
+     },
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/JournalOut"
+         },
+         "title": "Response Journal Api Journal Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "portfolios",
+     "journal"
+    ],
+    "summary": "Add Journal",
+    "operationId": "add_journal_api_journal_post",
+    "parameters": [
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/JournalIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/JournalOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "BacktestDetail": {
+    "properties": {
+     "run_id": {
+      "type": "string",
+      "title": "Run Id"
+     },
+     "strategy": {
+      "type": "string",
+      "title": "Strategy"
+     },
+     "strategy_version": {
+      "type": "integer",
+      "title": "Strategy Version"
+     },
+     "created_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Created At"
+     },
+     "start": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Start"
+     },
+     "end": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "End"
+     },
+     "cagr": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cagr"
+     },
+     "after_tax_xirr": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "After Tax Xirr"
+     },
+     "max_drawdown": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Max Drawdown"
+     },
+     "sharpe": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sharpe"
+     },
+     "benchmark_cagr": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Benchmark Cagr"
+     },
+     "metrics": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Metrics"
+     },
+     "strategy_config": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Strategy Config"
+     },
+     "backtest_config": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Backtest Config"
+     },
+     "data_snapshot": {
+      "type": "string",
+      "title": "Data Snapshot"
+     },
+     "git_sha": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Git Sha"
+     },
+     "equity": {
+      "items": {
+       "$ref": "#/components/schemas/SeriesPoint"
+      },
+      "type": "array",
+      "title": "Equity"
+     },
+     "benchmark": {
+      "items": {
+       "$ref": "#/components/schemas/SeriesPoint"
+      },
+      "type": "array",
+      "title": "Benchmark"
+     },
+     "drawdown": {
+      "items": {
+       "$ref": "#/components/schemas/SeriesPoint"
+      },
+      "type": "array",
+      "title": "Drawdown"
+     }
+    },
+    "type": "object",
+    "required": [
+     "run_id",
+     "strategy",
+     "strategy_version",
+     "created_at",
+     "start",
+     "end",
+     "cagr",
+     "after_tax_xirr",
+     "max_drawdown",
+     "sharpe",
+     "benchmark_cagr",
+     "metrics",
+     "strategy_config",
+     "backtest_config",
+     "data_snapshot",
+     "git_sha",
+     "equity",
+     "benchmark",
+     "drawdown"
+    ],
+    "title": "BacktestDetail"
+   },
+   "BacktestJob": {
+    "properties": {
+     "job_id": {
+      "type": "string",
+      "title": "Job Id"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "queued",
+       "running",
+       "done",
+       "error"
+      ],
+      "title": "Status"
+     },
+     "run_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Run Id"
+     },
+     "error": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Error"
+     }
+    },
+    "type": "object",
+    "required": [
+     "job_id",
+     "status"
+    ],
+    "title": "BacktestJob"
+   },
+   "BacktestRequest": {
+    "properties": {
+     "strategy": {
+      "type": "string",
+      "title": "Strategy",
+      "description": "Built-in name, or YAML/JSON config text"
+     },
+     "start": {
+      "type": "string",
+      "format": "date",
+      "title": "Start"
+     },
+     "end": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "End"
+     },
+     "capital": {
+      "type": "number",
+      "exclusiveMinimum": 0.0,
+      "title": "Capital",
+      "default": 1000000
+     },
+     "sip": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Sip",
+      "default": 0
+     },
+     "costs": {
+      "type": "boolean",
+      "title": "Costs",
+      "default": true
+     },
+     "taxes": {
+      "type": "boolean",
+      "title": "Taxes",
+      "default": true
+     },
+     "benchmark": {
+      "type": "string",
+      "title": "Benchmark",
+      "default": "NIFTYBEES"
+     }
+    },
+    "type": "object",
+    "required": [
+     "strategy",
+     "start"
+    ],
+    "title": "BacktestRequest"
+   },
+   "BacktestSummary": {
+    "properties": {
+     "run_id": {
+      "type": "string",
+      "title": "Run Id"
+     },
+     "strategy": {
+      "type": "string",
+      "title": "Strategy"
+     },
+     "strategy_version": {
+      "type": "integer",
+      "title": "Strategy Version"
+     },
+     "created_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Created At"
+     },
+     "start": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Start"
+     },
+     "end": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "End"
+     },
+     "cagr": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Cagr"
+     },
+     "after_tax_xirr": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "After Tax Xirr"
+     },
+     "max_drawdown": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Max Drawdown"
+     },
+     "sharpe": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Sharpe"
+     },
+     "benchmark_cagr": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Benchmark Cagr"
+     }
+    },
+    "type": "object",
+    "required": [
+     "run_id",
+     "strategy",
+     "strategy_version",
+     "created_at",
+     "start",
+     "end",
+     "cagr",
+     "after_tax_xirr",
+     "max_drawdown",
+     "sharpe",
+     "benchmark_cagr"
+    ],
+    "title": "BacktestSummary"
+   },
+   "CreatePortfolio": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_\\-]{2,64}$",
+      "title": "Name"
+     },
+     "strategy": {
+      "type": "string",
+      "title": "Strategy"
+     },
+     "capital": {
+      "type": "number",
+      "exclusiveMinimum": 0.0,
+      "title": "Capital",
+      "default": 1000000
+     },
+     "broker": {
+      "type": "string",
+      "enum": [
+       "paper",
+       "manual"
+      ],
+      "title": "Broker",
+      "default": "paper"
+     },
+     "band": {
+      "type": "number",
+      "exclusiveMaximum": 1.0,
+      "minimum": 0.0,
+      "title": "Band",
+      "default": 0.0
+     },
+     "min_trade_value": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Min Trade Value",
+      "default": 2000
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "strategy"
+    ],
+    "title": "CreatePortfolio"
+   },
+   "DataHealth": {
+    "properties": {
+     "datasets": {
+      "items": {
+       "$ref": "#/components/schemas/DatasetInfo"
+      },
+      "type": "array",
+      "title": "Datasets"
+     },
+     "quality": {
+      "$ref": "#/components/schemas/QualitySummary"
+     },
+     "jobs": {
+      "items": {
+       "$ref": "#/components/schemas/JobRunOut"
+      },
+      "type": "array",
+      "title": "Jobs"
+     }
+    },
+    "type": "object",
+    "required": [
+     "datasets",
+     "quality",
+     "jobs"
+    ],
+    "title": "DataHealth"
+   },
+   "DatasetInfo": {
+    "properties": {
+     "dataset": {
+      "type": "string",
+      "title": "Dataset"
+     },
+     "first": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "First"
+     },
+     "last": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last"
+     },
+     "trading_days": {
+      "type": "integer",
+      "title": "Trading Days"
+     },
+     "symbols": {
+      "type": "integer",
+      "title": "Symbols"
+     },
+     "snapshot": {
+      "type": "string",
+      "title": "Snapshot"
+     }
+    },
+    "type": "object",
+    "required": [
+     "dataset",
+     "first",
+     "last",
+     "trading_days",
+     "symbols",
+     "snapshot"
+    ],
+    "title": "DatasetInfo"
+   },
+   "FillRequest": {
+    "properties": {
+     "quantity": {
+      "type": "integer",
+      "exclusiveMinimum": 0.0,
+      "title": "Quantity"
+     },
+     "price": {
+      "type": "number",
+      "exclusiveMinimum": 0.0,
+      "title": "Price"
+     },
+     "day": {
+      "type": "string",
+      "format": "date",
+      "title": "Day"
+     },
+     "charges": {
+      "anyOf": [
+       {
+        "type": "number",
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Charges"
+     }
+    },
+    "type": "object",
+    "required": [
+     "quantity",
+     "price",
+     "day"
+    ],
+    "title": "FillRequest"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "Health": {
+    "properties": {
+     "status": {
+      "type": "string",
+      "const": "ok",
+      "title": "Status",
+      "default": "ok"
+     },
+     "version": {
+      "type": "string",
+      "title": "Version"
+     }
+    },
+    "type": "object",
+    "required": [
+     "version"
+    ],
+    "title": "Health"
+   },
+   "Holding": {
+    "properties": {
+     "symbol": {
+      "type": "string",
+      "title": "Symbol"
+     },
+     "quantity": {
+      "type": "integer",
+      "title": "Quantity"
+     },
+     "price": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Price"
+     },
+     "value": {
+      "type": "number",
+      "title": "Value"
+     },
+     "cost": {
+      "type": "number",
+      "title": "Cost"
+     },
+     "pnl": {
+      "type": "number",
+      "title": "Pnl"
+     },
+     "weight": {
+      "type": "number",
+      "title": "Weight"
+     },
+     "long_term_qty": {
+      "type": "integer",
+      "title": "Long Term Qty"
+     }
+    },
+    "type": "object",
+    "required": [
+     "symbol",
+     "quantity",
+     "price",
+     "value",
+     "cost",
+     "pnl",
+     "weight",
+     "long_term_qty"
+    ],
+    "title": "Holding"
+   },
+   "JobRunOut": {
+    "properties": {
+     "job": {
+      "type": "string",
+      "title": "Job"
+     },
+     "run_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Run Date"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "attempts": {
+      "type": "integer",
+      "title": "Attempts"
+     },
+     "message": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Message"
+     },
+     "updated_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Updated At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "job",
+     "run_date",
+     "status",
+     "attempts",
+     "message",
+     "updated_at"
+    ],
+    "title": "JobRunOut"
+   },
+   "JournalIn": {
+    "properties": {
+     "text": {
+      "type": "string",
+      "maxLength": 5000,
+      "minLength": 1,
+      "title": "Text"
+     },
+     "portfolio": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Portfolio"
+     },
+     "symbol": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Symbol"
+     },
+     "tags": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Tags"
+     }
+    },
+    "type": "object",
+    "required": [
+     "text"
+    ],
+    "title": "JournalIn"
+   },
+   "JournalOut": {
+    "properties": {
+     "text": {
+      "type": "string",
+      "maxLength": 5000,
+      "minLength": 1,
+      "title": "Text"
+     },
+     "portfolio": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Portfolio"
+     },
+     "symbol": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Symbol"
+     },
+     "tags": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Tags"
+     },
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "created_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Created At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "text",
+     "id",
+     "created_at"
+    ],
+    "title": "JournalOut"
+   },
+   "OrderOut": {
+    "properties": {
+     "id": {
+      "type": "integer",
+      "title": "Id"
+     },
+     "signal_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Signal Date"
+     },
+     "symbol": {
+      "type": "string",
+      "title": "Symbol"
+     },
+     "side": {
+      "type": "string",
+      "title": "Side"
+     },
+     "quantity": {
+      "type": "integer",
+      "title": "Quantity"
+     },
+     "est_price": {
+      "type": "number",
+      "title": "Est Price"
+     },
+     "status": {
+      "type": "string",
+      "title": "Status"
+     },
+     "filled_quantity": {
+      "type": "integer",
+      "title": "Filled Quantity"
+     },
+     "fill_price": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Fill Price"
+     },
+     "charges": {
+      "type": "number",
+      "title": "Charges"
+     },
+     "reason": {
+      "type": "string",
+      "title": "Reason"
+     },
+     "note": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Note"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "signal_date",
+     "symbol",
+     "side",
+     "quantity",
+     "est_price",
+     "status",
+     "filled_quantity",
+     "fill_price",
+     "charges",
+     "reason",
+     "note"
+    ],
+    "title": "OrderOut"
+   },
+   "PlannedTradeOut": {
+    "properties": {
+     "symbol": {
+      "type": "string",
+      "title": "Symbol"
+     },
+     "side": {
+      "type": "string",
+      "title": "Side"
+     },
+     "quantity": {
+      "type": "integer",
+      "title": "Quantity"
+     },
+     "est_price": {
+      "type": "number",
+      "title": "Est Price"
+     },
+     "value": {
+      "type": "number",
+      "title": "Value"
+     },
+     "reason": {
+      "type": "string",
+      "title": "Reason"
+     },
+     "note": {
+      "type": "string",
+      "title": "Note"
+     }
+    },
+    "type": "object",
+    "required": [
+     "symbol",
+     "side",
+     "quantity",
+     "est_price",
+     "value",
+     "reason",
+     "note"
+    ],
+    "title": "PlannedTradeOut"
+   },
+   "PortfolioDetail": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "strategy": {
+      "type": "string",
+      "title": "Strategy"
+     },
+     "broker": {
+      "type": "string",
+      "title": "Broker"
+     },
+     "active": {
+      "type": "boolean",
+      "title": "Active"
+     },
+     "initial_capital": {
+      "type": "number",
+      "title": "Initial Capital"
+     },
+     "cash": {
+      "type": "number",
+      "title": "Cash"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value"
+     },
+     "last_processed": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Processed"
+     },
+     "day_change": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Day Change"
+     },
+     "as_of": {
+      "type": "string",
+      "format": "date",
+      "title": "As Of"
+     },
+     "holdings": {
+      "items": {
+       "$ref": "#/components/schemas/Holding"
+      },
+      "type": "array",
+      "title": "Holdings"
+     },
+     "open_orders": {
+      "items": {
+       "$ref": "#/components/schemas/OrderOut"
+      },
+      "type": "array",
+      "title": "Open Orders"
+     },
+     "recent_orders": {
+      "items": {
+       "$ref": "#/components/schemas/OrderOut"
+      },
+      "type": "array",
+      "title": "Recent Orders"
+     },
+     "equity": {
+      "items": {
+       "$ref": "#/components/schemas/SeriesPoint"
+      },
+      "type": "array",
+      "title": "Equity"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "strategy",
+     "broker",
+     "active",
+     "initial_capital",
+     "cash",
+     "value",
+     "last_processed",
+     "day_change",
+     "as_of",
+     "holdings",
+     "open_orders",
+     "recent_orders",
+     "equity"
+    ],
+    "title": "PortfolioDetail"
+   },
+   "PortfolioSummary": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "strategy": {
+      "type": "string",
+      "title": "Strategy"
+     },
+     "broker": {
+      "type": "string",
+      "title": "Broker"
+     },
+     "active": {
+      "type": "boolean",
+      "title": "Active"
+     },
+     "initial_capital": {
+      "type": "number",
+      "title": "Initial Capital"
+     },
+     "cash": {
+      "type": "number",
+      "title": "Cash"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Value"
+     },
+     "last_processed": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Processed"
+     },
+     "day_change": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Day Change"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "strategy",
+     "broker",
+     "active",
+     "initial_capital",
+     "cash",
+     "value",
+     "last_processed",
+     "day_change"
+    ],
+    "title": "PortfolioSummary"
+   },
+   "Position": {
+    "properties": {
+     "symbol": {
+      "type": "string",
+      "title": "Symbol"
+     },
+     "weight": {
+      "type": "number",
+      "title": "Weight"
+     },
+     "reasons": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Reasons"
+     }
+    },
+    "type": "object",
+    "required": [
+     "symbol",
+     "weight",
+     "reasons"
+    ],
+    "title": "Position"
+   },
+   "QualitySummary": {
+    "properties": {
+     "run_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Run Id"
+     },
+     "counts": {
+      "additionalProperties": {
+       "additionalProperties": {
+        "type": "integer"
+       },
+       "type": "object"
+      },
+      "type": "object",
+      "title": "Counts"
+     },
+     "examples": {
+      "items": {
+       "additionalProperties": true,
+       "type": "object"
+      },
+      "type": "array",
+      "title": "Examples"
+     }
+    },
+    "type": "object",
+    "required": [
+     "run_id",
+     "counts",
+     "examples"
+    ],
+    "title": "QualitySummary"
+   },
+   "RebalanceOut": {
+    "properties": {
+     "portfolio": {
+      "type": "string",
+      "title": "Portfolio"
+     },
+     "as_of": {
+      "type": "string",
+      "format": "date",
+      "title": "As Of"
+     },
+     "trades": {
+      "items": {
+       "$ref": "#/components/schemas/PlannedTradeOut"
+      },
+      "type": "array",
+      "title": "Trades"
+     },
+     "deferred": {
+      "items": {
+       "$ref": "#/components/schemas/PlannedTradeOut"
+      },
+      "type": "array",
+      "title": "Deferred"
+     },
+     "est_charges": {
+      "type": "number",
+      "title": "Est Charges"
+     },
+     "findings": {
+      "items": {
+       "additionalProperties": {
+        "type": "string"
+       },
+       "type": "object"
+      },
+      "type": "array",
+      "title": "Findings"
+     },
+     "notes": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Notes"
+     },
+     "orders_created": {
+      "type": "integer",
+      "title": "Orders Created"
+     }
+    },
+    "type": "object",
+    "required": [
+     "portfolio",
+     "as_of",
+     "trades",
+     "deferred",
+     "est_charges",
+     "findings",
+     "notes",
+     "orders_created"
+    ],
+    "title": "RebalanceOut"
+   },
+   "SeriesPoint": {
+    "properties": {
+     "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Date"
+     },
+     "value": {
+      "type": "number",
+      "title": "Value"
+     }
+    },
+    "type": "object",
+    "required": [
+     "date",
+     "value"
+    ],
+    "title": "SeriesPoint"
+   },
+   "SignalsOut": {
+    "properties": {
+     "strategy": {
+      "type": "string",
+      "title": "Strategy"
+     },
+     "as_of": {
+      "type": "string",
+      "format": "date",
+      "title": "As Of"
+     },
+     "cash": {
+      "type": "number",
+      "title": "Cash"
+     },
+     "positions": {
+      "items": {
+       "$ref": "#/components/schemas/Position"
+      },
+      "type": "array",
+      "title": "Positions"
+     },
+     "notes": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Notes"
+     }
+    },
+    "type": "object",
+    "required": [
+     "strategy",
+     "as_of",
+     "cash",
+     "positions",
+     "notes"
+    ],
+    "title": "SignalsOut"
+   },
+   "StrategyDetail": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "version": {
+      "type": "integer",
+      "title": "Version"
+     },
+     "description": {
+      "type": "string",
+      "title": "Description"
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "pipeline",
+       "blend"
+      ],
+      "title": "Kind"
+     },
+     "schedule": {
+      "type": "string",
+      "title": "Schedule"
+     },
+     "source": {
+      "type": "string",
+      "enum": [
+       "builtin",
+       "registered"
+      ],
+      "title": "Source"
+     },
+     "config_hash": {
+      "type": "string",
+      "title": "Config Hash"
+     },
+     "config": {
+      "additionalProperties": true,
+      "type": "object",
+      "title": "Config"
+     },
+     "yaml": {
+      "type": "string",
+      "title": "Yaml"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "version",
+     "description",
+     "kind",
+     "schedule",
+     "source",
+     "config_hash",
+     "config",
+     "yaml"
+    ],
+    "title": "StrategyDetail"
+   },
+   "StrategySummary": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "version": {
+      "type": "integer",
+      "title": "Version"
+     },
+     "description": {
+      "type": "string",
+      "title": "Description"
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "pipeline",
+       "blend"
+      ],
+      "title": "Kind"
+     },
+     "schedule": {
+      "type": "string",
+      "title": "Schedule"
+     },
+     "source": {
+      "type": "string",
+      "enum": [
+       "builtin",
+       "registered"
+      ],
+      "title": "Source"
+     },
+     "config_hash": {
+      "type": "string",
+      "title": "Config Hash"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "version",
+     "description",
+     "kind",
+     "schedule",
+     "source",
+     "config_hash"
+    ],
+    "title": "StrategySummary"
+   },
+   "TaxYear": {
+    "properties": {
+     "fy": {
+      "type": "string",
+      "title": "Fy"
+     },
+     "stcg": {
+      "type": "number",
+      "title": "Stcg"
+     },
+     "ltcg": {
+      "type": "number",
+      "title": "Ltcg"
+     },
+     "exemption_used": {
+      "type": "number",
+      "title": "Exemption Used"
+     },
+     "tax": {
+      "type": "number",
+      "title": "Tax"
+     },
+     "carried_forward": {
+      "type": "number",
+      "title": "Carried Forward"
+     }
+    },
+    "type": "object",
+    "required": [
+     "fy",
+     "stcg",
+     "ltcg",
+     "exemption_used",
+     "tax",
+     "carried_forward"
+    ],
+    "title": "TaxYear"
+   },
+   "ValidateRequest": {
+    "properties": {
+     "text": {
+      "type": "string",
+      "title": "Text",
+      "description": "Strategy config as YAML or JSON"
+     }
+    },
+    "type": "object",
+    "required": [
+     "text"
+    ],
+    "title": "ValidateRequest"
+   },
+   "ValidateResult": {
+    "properties": {
+     "ok": {
+      "type": "boolean",
+      "title": "Ok"
+     },
+     "error": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Error"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "config_hash": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Config Hash"
+     },
+     "config": {
+      "anyOf": [
+       {
+        "additionalProperties": true,
+        "type": "object"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Config"
+     }
+    },
+    "type": "object",
+    "required": [
+     "ok"
+    ],
+    "title": "ValidateResult"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   }
+  }
+ }
+}
