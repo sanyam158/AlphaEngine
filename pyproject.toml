@@ -55,6 +55,7 @@ ignore = ["PLR0913", "PLR2004", "RUF001", "RUF002", "RUF003"]
 
 [tool.ruff.lint.per-file-ignores]
 "alphaengine/backtest/report.py" = ["E501"]  # HTML/CSS template
+"alphaengine/robustness/report.py" = ["E501"]  # HTML template
 "alphaengine/cli/*" = ["PLR0917", "E501"]  # typer commands take many options
 "tests/**" = ["PLR2004", "S101", "PT018", "PLC0415", "E501", "N817", "PLR0917"]
 

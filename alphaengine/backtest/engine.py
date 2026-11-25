@@ -380,9 +380,10 @@ class _Sim:
                 self.cash += interest - tax
                 self.totals["interest"] += interest
                 self.totals["income_tax"] += tax
-            for sym, j in self.col.items():
-                px = self.c[i, j]
-                if np.isfinite(px) and (self.shares.get(sym) or sym in self.last_target):
+            # Only held or targeted symbols matter for valuation and sizing.
+            for sym in {s for s, q in self.shares.items() if q} | self.last_target.keys():
+                px = self.c[i, self.col[sym]] if sym in self.col else np.nan
+                if np.isfinite(px):
                     self.last_px[sym] = float(px)
             nxt = days[k + 1] if k + 1 < len(days) else None
             fy = financial_year(d.date())

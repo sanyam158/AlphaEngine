@@ -11,6 +11,7 @@ from alembic.config import Config
 from alphaengine import __version__
 from alphaengine.cli.backtest_commands import backtest_app
 from alphaengine.cli.data_commands import data_app, import_app, ingest_app
+from alphaengine.cli.robust_commands import robust_app
 from alphaengine.cli.strategy_commands import strategy_app
 from alphaengine.config.settings import get_settings
 from alphaengine.core.logging import configure_logging, get_logger
@@ -23,6 +24,7 @@ app.add_typer(import_app, name="import")
 app.add_typer(data_app, name="data")
 app.add_typer(strategy_app, name="strategy")
 app.add_typer(backtest_app, name="backtest")
+app.add_typer(robust_app, name="robust")
 
 _ROOT = Path(__file__).resolve().parents[2]
 
