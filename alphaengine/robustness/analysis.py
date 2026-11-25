@@ -55,7 +55,7 @@ def _cagr(r: pd.Series) -> float:
     return stats.annualise(r)
 
 
-def load_for(  # noqa: PLR0917
+def load_for(
     ctx: AppContext,
     configs: Sequence[AnyConfig],
     start: date,

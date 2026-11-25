@@ -210,6 +210,16 @@ class LotBook:
             self._insert(lot)
         return new
 
+    def restore(self, lots: list[TaxLot]) -> None:
+        """Load previously persisted lots (order is re-established by date and seq). The lot
+        counter is advanced past restored seqs so new same-day lots sort after old ones."""
+        global _seq  # noqa: PLW0603 - process-wide lot ordering counter
+        top = max((lot.seq for lot in lots), default=0)
+        nxt = next(_seq)
+        _seq = count(max(nxt, top + 1))
+        for lot in lots:
+            self._insert(lot)
+
     def _insert(self, lot: TaxLot) -> None:
         lots = self._lots.setdefault(lot.symbol, [])
         lots.append(lot)

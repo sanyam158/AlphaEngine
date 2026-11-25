@@ -177,3 +177,119 @@ class BacktestRunRecord(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
     )
+
+
+# ============================================================================ portfolios (Phase 6)
+class Portfolio(Base):
+    """A paper or real (manually executed) portfolio following one strategy."""
+
+    __tablename__ = "portfolios"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
+    strategy: Mapped[str] = mapped_column(String(200), nullable=False)  # built-in name or YAML path
+    strategy_hash: Mapped[str] = mapped_column(String(16), nullable=False)
+    broker: Mapped[str] = mapped_column(String(16), nullable=False)  # paper | manual
+    initial_capital: Mapped[float] = mapped_column(Numeric(16, 2), nullable=False)
+    cash: Mapped[float] = mapped_column(Numeric(16, 2), nullable=False)
+    active: Mapped[bool] = mapped_column(default=True, nullable=False)  # False = kill switch
+    settings: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
+    last_processed: Mapped[date | None] = mapped_column(Date)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class PortfolioLot(Base):
+    __tablename__ = "portfolio_lots"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    portfolio_id: Mapped[int] = mapped_column(
+        ForeignKey("portfolios.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    symbol: Mapped[str] = mapped_column(String(20), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    cost: Mapped[float] = mapped_column(Numeric(18, 6), nullable=False)
+    acquired: Mapped[date] = mapped_column(Date, nullable=False)
+    source: Mapped[str] = mapped_column(String(8), nullable=False, default="BUY")
+    seq: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class PortfolioOrder(Base):
+    """Order lifecycle NEW -> SUBMITTED -> PARTIAL/FILLED | CANCELLED | REJECTED | EXPIRED."""
+
+    __tablename__ = "portfolio_orders"
+    __table_args__ = (UniqueConstraint("idempotency_key"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    portfolio_id: Mapped[int] = mapped_column(
+        ForeignKey("portfolios.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    idempotency_key: Mapped[str] = mapped_column(String(120), nullable=False)
+    signal_date: Mapped[date] = mapped_column(Date, nullable=False)
+    symbol: Mapped[str] = mapped_column(String(20), nullable=False)
+    side: Mapped[str] = mapped_column(String(4), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    est_price: Mapped[float] = mapped_column(Numeric(14, 2), nullable=False)
+    status: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
+    filled_quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    fill_price: Mapped[float | None] = mapped_column(Numeric(14, 2))
+    charges: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False, default=0)
+    reason: Mapped[str] = mapped_column(String(200), nullable=False, default="")
+    note: Mapped[str | None] = mapped_column(Text)
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    filled_at: Mapped[date | None] = mapped_column(Date)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+
+
+class PortfolioDisposal(Base):
+    """Realized lots, kept for capital-gains reports."""
+
+    __tablename__ = "portfolio_disposals"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    portfolio_id: Mapped[int] = mapped_column(
+        ForeignKey("portfolios.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    symbol: Mapped[str] = mapped_column(String(20), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    acquired: Mapped[date] = mapped_column(Date, nullable=False)
+    sold: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    cost: Mapped[float] = mapped_column(Numeric(18, 6), nullable=False)
+    gross_proceeds: Mapped[float] = mapped_column(Numeric(18, 6), nullable=False)
+    sell_expenses: Mapped[float] = mapped_column(Numeric(14, 6), nullable=False)
+    stt: Mapped[float] = mapped_column(Numeric(14, 6), nullable=False)
+    lot_source: Mapped[str] = mapped_column(String(8), nullable=False)
+
+
+class PortfolioSnapshot(Base):
+    __tablename__ = "portfolio_snapshots"
+    __table_args__ = (UniqueConstraint("portfolio_id", "day"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    portfolio_id: Mapped[int] = mapped_column(
+        ForeignKey("portfolios.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    day: Mapped[date] = mapped_column(Date, nullable=False)
+    cash: Mapped[float] = mapped_column(Numeric(16, 2), nullable=False)
+    value: Mapped[float] = mapped_column(Numeric(16, 2), nullable=False)
+    holdings: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
+class JobRun(Base):
+    """One scheduled job execution per (job, run_date) for idempotency and history."""
+
+    __tablename__ = "job_runs"
+    __table_args__ = (UniqueConstraint("job", "run_date"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    job: Mapped[str] = mapped_column(String(40), nullable=False)
+    run_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String(12), nullable=False)  # ok | waiting | error
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    message: Mapped[str | None] = mapped_column(Text)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )

@@ -15,7 +15,7 @@ See [docs/PLAN.md](docs/PLAN.md) for the architecture and the phased roadmap.
 - [x] Phase 3: strategy engine and feature library ([guide](docs/STRATEGIES.md))
 - [x] Phase 4: backtest engine: costs, taxes, SIP, metrics, reports ([guide](docs/BACKTEST.md))
 - [x] Phase 5: robustness: sweeps, walk-forward, deflated Sharpe, PBO, bootstrap, fast engine ([guide](docs/ROBUSTNESS.md))
-- [ ] Phase 6: portfolio, paper trading, scheduler
+- [x] Phase 6: paper/manual portfolios, tax-aware planner, daily job, Telegram ([guide](docs/PAPER_TRADING.md))
 - [ ] Phase 7: API + dashboard
 - [ ] Phase 8–9: swing trading, broker integration
 
