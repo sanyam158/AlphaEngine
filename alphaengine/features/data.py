@@ -6,6 +6,8 @@ Panels:
 - ``raw_close``: as traded, for absolute-price rules (e.g. "price > ₹20")
 - ``value``: traded value in ₹, for liquidity
 - ``high`` / ``low``: split-adjusted, only when loaded with ``ohlc=True``
+- ``raw_open`` / ``raw_high`` / ``raw_low``: as traded, only with ``execution=True`` (backtests)
+- ``actions``: corporate actions (the backtester applies them to holdings)
 - ``benchmarks``: index levels (NIFTY50, ...)
 
 :meth:`MarketData.truncate` returns a view that ends at a date, which is how look-ahead is
@@ -33,9 +35,11 @@ from alphaengine.data.repositories import load_corporate_actions
 
 if TYPE_CHECKING:
     from alphaengine.app import AppContext
+    from alphaengine.data.store import PriceStore
     from alphaengine.features.base import FeatureSpec
 
 DTYPE = np.float32
+ACTION_COLUMNS = ["symbol", "ex_date", "kind", "ratio", "amount", "source"]
 
 
 def _pivot(bars: pd.DataFrame, values: pd.Series) -> pd.DataFrame:
@@ -55,6 +59,10 @@ class MarketData:
     benchmarks: pd.DataFrame = field(default_factory=pd.DataFrame)
     high: pd.DataFrame | None = None
     low: pd.DataFrame | None = None
+    raw_open: pd.DataFrame | None = None
+    raw_high: pd.DataFrame | None = None
+    raw_low: pd.DataFrame | None = None
+    actions: pd.DataFrame = field(default_factory=lambda: pd.DataFrame(columns=ACTION_COLUMNS))
     industries: dict[str, str] = field(default_factory=dict)
     asset_classes: dict[str, str] = field(default_factory=dict)  # symbol -> EQUITY | ETF
     memberships: pd.DataFrame = field(  # index_name, symbol, start_date, end_date
@@ -73,16 +81,13 @@ class MarketData:
         benchmark_bars: pd.DataFrame | None = None,
         *,
         ohlc: bool = False,
+        execution: bool = False,
         industries: dict[str, str] | None = None,
         memberships: pd.DataFrame | None = None,
         asset_classes: dict[str, str] | None = None,
     ) -> MarketData:
         """Build panels from a raw (unadjusted) long bars frame plus corporate actions."""
-        acts = (
-            actions
-            if actions is not None
-            else pd.DataFrame(columns=["symbol", "ex_date", "kind", "ratio", "amount", "source"])
-        )
+        acts = actions if actions is not None else pd.DataFrame(columns=ACTION_COLUMNS)
         bars = bars.sort_values(["date", "symbol"]).reset_index(drop=True)
         f = adjustment_factors(bars, acts)
         split, tr = f["split_factor"], f["tr_factor"]
@@ -99,6 +104,10 @@ class MarketData:
             low=_pivot(bars, bars["low"] * split) if ohlc else None,
             industries=industries or {},
             asset_classes=asset_classes or {},
+            raw_open=_pivot(bars, bars["open"]) if execution else None,
+            raw_high=_pivot(bars, bars["high"]) if execution else None,
+            raw_low=_pivot(bars, bars["low"]) if execution else None,
+            actions=acts,
         )
         if memberships is not None:
             md.memberships = memberships
@@ -115,8 +124,15 @@ class MarketData:
         symbols: Sequence[str] | None = None,
         *,
         ohlc: bool = False,
+        execution: bool = False,
     ) -> MarketData:
-        cols = ["close", "value", "volume", *(["high", "low"] if ohlc else [])]
+        cols = [
+            "close",
+            "value",
+            "volume",
+            *(["high", "low"] if (ohlc or execution) else []),
+            *(["open"] if execution else []),
+        ]
         bars = load_prices(
             ctx.equities, ctx.session_factory, symbols, start, end, adjust="none", columns=cols
         )
@@ -150,6 +166,7 @@ class MarketData:
             actions,
             bench,
             ohlc=ohlc,
+            execution=execution,
             industries=industries,
             memberships=mem,
             asset_classes=asset_classes,
@@ -179,6 +196,10 @@ class MarketData:
             benchmarks=self.benchmarks.loc[:ts] if not self.benchmarks.empty else self.benchmarks,
             high=cut(self.high),
             low=cut(self.low),
+            raw_open=cut(self.raw_open),
+            raw_high=cut(self.raw_high),
+            raw_low=cut(self.raw_low),
+            actions=self.actions,
             industries=self.industries,
             asset_classes=self.asset_classes,
             memberships=self.memberships,
@@ -217,3 +238,24 @@ class MarketData:
             & m["end_date"].map(lambda e: e is None or pd.isna(e) or e > d).astype(bool)
         ]
         return sorted(sel["symbol"].astype(str))
+
+
+def liquid_symbols(store: PriceStore, start: date, end: date, top_per_year: int) -> list[str]:
+    """Symbols ranking in the top ``top_per_year`` by median daily traded value in any calendar
+    year of ``[start, end]``. A cheap superset of every liquidity universe over the period, so
+    backtests can load ~1k columns instead of the whole market (delisted stocks included)."""
+    with store.connect() as con:
+        rows = con.execute(
+            """
+            WITH yearly AS (
+                SELECT year(date) AS y, symbol, median(value) AS med
+                FROM bars WHERE date BETWEEN ? AND ? GROUP BY 1, 2
+            ), ranked AS (
+                SELECT symbol, row_number() OVER (PARTITION BY y ORDER BY med DESC) AS rk
+                FROM yearly
+            )
+            SELECT DISTINCT symbol FROM ranked WHERE rk <= ? ORDER BY symbol
+            """,
+            [pd.Timestamp(start).to_pydatetime(), pd.Timestamp(end).to_pydatetime(), top_per_year],
+        ).fetchall()
+    return [str(r[0]) for r in rows]

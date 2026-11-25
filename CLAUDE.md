@@ -29,4 +29,6 @@ The master plan and phase roadmap live in `docs/PLAN.md`; keep it updated when s
 - Curated prices are raw; adjust only at read time (`data.prices.load_prices`). See docs/DATA.md.
 - New features go in `features/library.py` and must get a `SMALL` entry in
   `tests/unit/test_features.py` (causality test). New stages register via `@component`.
+- Engine changes that move `tests/golden/momentum_synthetic.json` need `UPDATE_GOLDEN=1 pytest
+  tests/golden` and a reviewed diff of that file.
 - Work on feature branches per phase; never commit `.env` or data under `var/`.

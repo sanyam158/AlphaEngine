@@ -156,3 +156,24 @@ class StrategyConfigRecord(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+
+
+class BacktestRunRecord(Base):
+    """One backtest: exact strategy + settings + data snapshot + code version, and its metrics.
+    Equity curve, trades and targets are stored as files under ``<data_dir>/runs/<run_id>/``."""
+
+    __tablename__ = "backtest_runs"
+
+    run_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    strategy: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    strategy_version: Mapped[int] = mapped_column(Integer, nullable=False)
+    strategy_hash: Mapped[str] = mapped_column(String(16), nullable=False)
+    strategy_config: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    backtest_config: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    data_snapshot: Mapped[str] = mapped_column(String(16), nullable=False)
+    git_sha: Mapped[str | None] = mapped_column(String(40))
+    duration_s: Mapped[float] = mapped_column(Float, nullable=False)
+    metrics: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
+    )

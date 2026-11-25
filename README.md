@@ -13,7 +13,7 @@ See [docs/PLAN.md](docs/PLAN.md) for the architecture and the phased roadmap.
 - [x] Phase 1: data layer ([guide](docs/DATA.md))
 - [x] Phase 2: market model: costs, fills, tax lots, capital-gains tax ([guide](docs/MARKET.md))
 - [x] Phase 3: strategy engine and feature library ([guide](docs/STRATEGIES.md))
-- [ ] Phase 4: backtest engine
+- [x] Phase 4: backtest engine: costs, taxes, SIP, metrics, reports ([guide](docs/BACKTEST.md))
 - [ ] Phase 5: robustness + event-driven engine
 - [ ] Phase 6: portfolio, paper trading, scheduler
 - [ ] Phase 7: API + dashboard
