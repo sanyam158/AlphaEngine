@@ -1,0 +1,22 @@
+# Swing (mean reversion in an uptrend): buy large liquid stocks after a sharp 2-day dip
+# (RSI(2) < 10) while above their 200-day average; exit on the bounce (close above the 5-day
+# average), a 10% stop or after 15 days. Many short trades: expect STCG tax and costs to bite.
+name: swing_pullback
+version: 1
+description: RSI(2) < 10 dips in uptrends among the 100 most liquid stocks; exit above 5-day SMA, 10% stop, 15-day time stop.
+schedule: daily
+universe: {type: liquidity, top_n: 100, window: 126}
+filters:
+  - {type: min_price, value: 50}
+  - {type: min_history, days: 273}
+  - {type: feature, feature: max_abs_return, params: {window: 252}, op: "<", value: 0.35}
+  - {type: feature, feature: price_to_sma, params: {window: 200}, op: ">", value: 0}
+  - {type: feature, feature: rsi, params: {window: 2}, op: "<", value: 10}
+scorer: {type: feature, feature: rsi, params: {window: 2}, higher_is_better: false}
+selector: {type: top_n, n: 10}
+weighter: {type: equal}
+max_positions: 10
+exits:
+  - {type: feature, feature: price_to_sma, params: {window: 5}, op: ">", value: 0}
+  - {type: stop_loss, pct: 0.10}
+  - {type: time_stop, days: 15}

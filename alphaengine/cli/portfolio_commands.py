@@ -226,6 +226,20 @@ def tax(name: Name) -> None:
         )
 
 
+@portfolio_app.command("harvest")
+def harvest(name: Name, on: On = None) -> None:
+    """Tax-loss and LTCG-exemption harvesting ideas for this financial year."""
+    ideas = _svc().harvest(name, _d(on) if on else None)
+    if not ideas:
+        typer.echo("no harvesting opportunities worth the costs right now")
+    for i in ideas:
+        label = "LOSS" if i.kind == "loss" else "LTCG"
+        typer.echo(
+            f"  {label} {i.symbol:<14} sell {i.quantity} @ ~₹{i.price:,.2f}  gain ₹{i.gain:,.0f}  "
+            f"tax this FY {i.tax_change:+,.0f}  costs ₹{i.round_trip_cost:,.0f}  - {i.note}"
+        )
+
+
 @portfolio_app.command("pause")
 def pause(name: Name) -> None:
     """Kill switch: stop generating orders for this portfolio."""

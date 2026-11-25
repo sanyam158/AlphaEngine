@@ -238,3 +238,50 @@ class JournalIn(BaseModel):
 class JournalOut(JournalIn):
     id: int
     created_at: datetime | None
+
+
+# ------------------------------------------------------------------ harvesting & planning
+class HarvestIdeaOut(BaseModel):
+    kind: Literal["loss", "ltcg_gain"]
+    symbol: str
+    quantity: int
+    price: float
+    gain: float
+    long_term: bool
+    tax_change: float
+    round_trip_cost: float
+    net_benefit: float
+    note: str
+
+
+class GoalRequest(BaseModel):
+    target: float = Field(gt=0, description="In today's rupees")
+    years: int = Field(ge=1, le=60)
+    current: float = Field(default=0, ge=0)
+    monthly_sip: float = Field(default=0, ge=0)
+    step_up: float = Field(default=0, ge=0, le=0.5)
+    inflation: float = Field(default=0.06, ge=0, le=0.2)
+    after_tax: bool = True
+    success: float = Field(default=0.8, gt=0, lt=1)
+    run_id: str | None = None
+    symbol: str = "NIFTYBEES"
+
+
+class GoalBand(BaseModel):
+    year: int
+    p10: float
+    p50: float
+    p90: float
+
+
+class GoalOut(BaseModel):
+    probability: float
+    target_nominal: float
+    p10: float
+    p50: float
+    p90: float
+    contributed: float
+    required_sip: float | None
+    source: str
+    history_months: int
+    bands: list[GoalBand]

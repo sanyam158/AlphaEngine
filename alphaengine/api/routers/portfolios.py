@@ -10,6 +10,7 @@ from alphaengine.api.deps import Ctx, Service
 from alphaengine.api.schemas import (
     CreatePortfolio,
     FillRequest,
+    HarvestIdeaOut,
     JournalIn,
     JournalOut,
     OrderOut,
@@ -170,6 +171,29 @@ def set_active(name: str, action: str, svc: Service, ctx: Ctx) -> PortfolioSumma
     except AlphaEngineError as exc:
         raise _err(exc) from exc
     return next(p for p in list_all(ctx) if p.name == name)
+
+
+@router.get("/portfolios/{name}/harvest", response_model=list[HarvestIdeaOut])
+def harvest(name: str, svc: Service) -> list[HarvestIdeaOut]:
+    try:
+        ideas = svc.harvest(name)
+    except AlphaEngineError as exc:
+        raise _err(exc) from exc
+    return [
+        HarvestIdeaOut(
+            kind=i.kind,
+            symbol=i.symbol,
+            quantity=i.quantity,
+            price=i.price,
+            gain=i.gain,
+            long_term=i.long_term,
+            tax_change=i.tax_change,
+            round_trip_cost=i.round_trip_cost,
+            net_benefit=i.net_benefit,
+            note=i.note,
+        )
+        for i in ideas
+    ]
 
 
 @router.get("/portfolios/{name}/tax", response_model=list[TaxYear])

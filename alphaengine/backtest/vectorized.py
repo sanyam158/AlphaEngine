@@ -51,7 +51,7 @@ class VectorResult:
         return float(self.equity.attrs.get("costs", 0.0))
 
 
-def run_vectorized(
+def run_vectorized(  # noqa: PLR0915 - one linear simulation loop
     strategy: Strategy,
     md: MarketData,
     start: date,
@@ -64,6 +64,8 @@ def run_vectorized(
 ) -> VectorResult:
     if md.raw_open is None:
         raise ValueError("MarketData must be loaded with execution=True (needs open prices)")
+    if getattr(strategy, "exits", None):
+        raise ValueError("strategies with exit rules need the full engine (backtest run)")
     cost = (
         default_cost_per_side() if cost_per_side is None else cost_per_side
     ) + slippage_bps / 1e4

@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 
 from alphaengine import __version__
 from alphaengine.api.deps import require_auth
-from alphaengine.api.routers import backtests, data, portfolios, strategies
+from alphaengine.api.routers import backtests, data, planning, portfolios, strategies
 from alphaengine.api.routers.backtests import JobBoard
 from alphaengine.api.schemas import Health
 from alphaengine.app import AppContext, build_context
@@ -42,7 +42,7 @@ def create_app(ctx: AppContext | None = None, *, web_dist: Path | None = WEB_DIS
     def health() -> Health:
         return Health(version=__version__)
 
-    for module in (data, strategies, backtests, portfolios):
+    for module in (data, strategies, backtests, portfolios, planning):
         api.include_router(module.router)
     app.include_router(api)
 

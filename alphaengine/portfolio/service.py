@@ -32,6 +32,7 @@ from alphaengine.features.data import MarketData
 from alphaengine.market.calendar import TradingCalendar
 from alphaengine.market.costs import CostModel
 from alphaengine.market.tax import FYTax, compute_tax_history, financial_year
+from alphaengine.portfolio.harvest import HarvestIdea, harvest_ideas
 from alphaengine.portfolio.lots import TaxLot
 from alphaengine.portfolio.planner import Plan, PlannerSettings, plan_rebalance
 from alphaengine.portfolio.store import (
@@ -171,7 +172,12 @@ class PortfolioService:
         settings: dict[str, Any] | None = None,
     ) -> None:
         cfg = load_config(strategy)
-        build_strategy(cfg)  # validate now, not at the first rebalance
+        built = build_strategy(cfg)  # validate now, not at the first rebalance
+        if getattr(built, "exits", None):
+            raise PortfolioError(
+                "rule-based (swing) strategies are backtest-only for now: portfolios rebalance "
+                "to targets and don't track per-position stops yet"
+            )
         with session_scope(self.ctx.session_factory) as s:
             create_portfolio(
                 s,
@@ -470,6 +476,20 @@ class PortfolioService:
         return reconcile(state.quantities(), read_holdings_csv(path))
 
     # ------------------------------------------------------------------ reporting
+    def harvest(self, name: str, on: date | None = None) -> list[HarvestIdea]:
+        """Tax-loss and LTCG-exemption harvesting ideas for the current FY."""
+        with session_scope(self.ctx.session_factory) as s:
+            rec = get_portfolio(s, name)
+            state = load_state(s, rec)
+            disposals = load_disposals(s, rec)
+            last = rec.last_processed
+        day = on or last or date.today()  # noqa: DTZ011
+        fy = financial_year(day)
+        history = compute_tax_history([d for d in disposals if financial_year(d.sold) < fy])
+        carried = history[fy - 1].carried_forward if (fy - 1) in history else []
+        prices = self.closes(state.lots.symbols(), day)
+        return harvest_ideas(state.lots, prices, day, disposals, carried, self.costs)
+
     def tax_report(self, name: str) -> dict[int, FYTax]:
         with session_scope(self.ctx.session_factory) as s:
             disposals = load_disposals(s, get_portfolio(s, name))

@@ -38,6 +38,7 @@ from alphaengine.market.execution_model import apply_slippage, circuit_locked
 from alphaengine.market.tax import CarriedLoss, FYTax, compute_fy_tax, financial_year
 from alphaengine.portfolio.lots import Disposal, LotBook
 from alphaengine.strategy.core import Strategy, StrategyContext, TargetPortfolio
+from alphaengine.strategy.exits import PositionState
 
 log = get_logger(__name__)
 TRADING_DAYS = 252
@@ -114,6 +115,11 @@ class _Sim:
         # Invest on day one, then follow the strategy's schedule.
         self.rebalance_days = {self.days[0], *strategy.rebalance_dates(self.days)}
         self.last_target: dict[str, float] = {}
+        # Rules mode (swing): entries into free slots, exits only via exit rules.
+        self.exit_rules = list(getattr(strategy, "exits", ()) or ())
+        self.max_positions = int(getattr(strategy, "max_positions", None) or 10)
+        self.adj = md.close.to_numpy(dtype=float)
+        self.positions: dict[str, dict[str, Any]] = {}  # symbol -> entry state
         self.fmv = self._fmv_lookup()
 
     # ------------------------------------------------------------------ setup helpers
@@ -239,6 +245,8 @@ class _Sim:
             sold_today.add(o.symbol)
             self.disposals.extend(self.lots.sell(o.symbol, qty, price, d.date(), ch))
             self.shares[o.symbol] -= qty
+            if self.shares[o.symbol] <= 0:
+                self.positions.pop(o.symbol, None)
             self.cash += float(price) * qty - float(ch.total)
             self._record(d, o, qty, price, ch)
             if qty < o.quantity and self.shares[o.symbol] > 0:
@@ -266,6 +274,10 @@ class _Sim:
                     continue
                 ch = self.costs.charges(Side.BUY, qty, price, d.date())
             self.cash -= float(price) * qty + float(ch.total)
+            if self.shares.get(o.symbol, 0) <= 0:
+                j = self.col[o.symbol]
+                ref = self.adj[i, j] if np.isfinite(self.adj[i, j]) else float(price)
+                self.positions[o.symbol] = {"date": d, "row": i, "entry": ref, "peak": ref}
             self.shares[o.symbol] += qty
             self.lots.buy(o.symbol, qty, price, d.date(), ch)
             self._record(d, o, qty, price, ch)
@@ -352,6 +364,39 @@ class _Sim:
             else:
                 self.pending.append(_Order(sym, Side.BUY, value=diff, reason="rebalance"))
 
+    def _rebalance_rules(self, d: pd.Timestamp) -> None:
+        """Rules mode: fill free slots with the strategy's top picks; never trim or exit here."""
+        total = self._value()
+        target = self.strategy.target(StrategyContext(d, self.md, self._weights(total)))
+        self.targets.append(target)
+        self.last_target = {}
+        busy = {s for s, q in self.shares.items() if q > 0} | {o.symbol for o in self.pending}
+        slots = self.max_positions - len(busy)
+        size = total / self.max_positions
+        for sym in [s for s in target.weights if s not in busy and s in self.col][: max(slots, 0)]:
+            if size >= self.cfg.min_trade_value:
+                self.pending.append(_Order(sym, Side.BUY, value=size, reason="entry"))
+
+    def _check_exits(self, d: pd.Timestamp, i: int) -> None:
+        selling = {o.symbol for o in self.pending if o.side is Side.SELL}
+        for sym, st in list(self.positions.items()):
+            if self.shares.get(sym, 0) <= 0 or sym in selling:
+                continue
+            close = self.adj[i, self.col[sym]]
+            if not np.isfinite(close):
+                continue
+            st["peak"] = max(st["peak"], float(close))
+            state = PositionState(
+                sym, st["date"], st["entry"], st["peak"], float(close), i - st["row"]
+            )
+            for rule in self.exit_rules:
+                why = rule.check(state, self.md, d)
+                if why:
+                    self.pending.append(
+                        _Order(sym, Side.SELL, quantity=self.shares[sym], reason=f"exit: {why}")
+                    )
+                    break
+
     def _deploy_contribution(self, amount: float) -> None:
         invested = sum(self.last_target.values())
         if invested <= 0:
@@ -392,7 +437,11 @@ class _Sim:
             total = self._value()
             if self.cash < 0 and nxt is not None:
                 self._raise_cash(total)
-            if nxt is not None and d in self.rebalance_days:
+            if nxt is not None and self.exit_rules:
+                self._check_exits(d, i)
+                if d in self.rebalance_days:
+                    self._rebalance_rules(d)
+            elif nxt is not None and d in self.rebalance_days:
                 self._rebalance(d)
             elif nxt is not None and flow:
                 self._deploy_contribution(flow)

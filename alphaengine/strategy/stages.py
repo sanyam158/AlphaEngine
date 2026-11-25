@@ -18,7 +18,7 @@ from alphaengine.core.errors import StrategyError
 from alphaengine.features.base import FeatureSpec
 from alphaengine.strategy.core import StrategyContext
 
-STAGE_KINDS = ("universe", "filter", "scorer", "selector", "weighter", "overlay")
+STAGE_KINDS = ("universe", "filter", "scorer", "selector", "weighter", "overlay", "exit")
 _COMPONENTS: dict[str, dict[str, type]] = {k: {} for k in STAGE_KINDS}
 
 

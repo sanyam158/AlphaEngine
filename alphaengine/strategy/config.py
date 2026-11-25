@@ -29,6 +29,7 @@ from typing import Any
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError, field_validator
 
+import alphaengine.strategy.exits  # noqa: F401 - registers exit components
 from alphaengine.core.errors import StrategyError
 from alphaengine.strategy.core import Frequency, Schedule, Strategy
 from alphaengine.strategy.pipeline import Blend, PipelineStrategy
@@ -67,6 +68,8 @@ class PipelineConfig(_Base):
     selector: StageConfig | None = None
     weighter: StageConfig = StageConfig(type="equal")
     overlays: list[StageConfig] = Field(default_factory=list)
+    exits: list[StageConfig] = Field(default_factory=list)  # rules mode (swing trading)
+    max_positions: int | None = Field(default=None, ge=1, le=200)
 
 
 class BlendPart(BaseModel):
@@ -140,6 +143,8 @@ def build_strategy(cfg: AnyConfig, *, _depth: int = 0) -> Strategy:
         version=cfg.version,
         description=cfg.description,
         config=raw,
+        exits=[_build_stage("exit", x, f"exits[{i}]") for i, x in enumerate(cfg.exits)],
+        max_positions=cfg.max_positions or (10 if cfg.exits else None),
     )
 
 

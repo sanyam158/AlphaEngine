@@ -165,7 +165,7 @@ class MarketData:
             bars,
             actions,
             bench,
-            ohlc=ohlc,
+            ohlc=ohlc or execution,
             execution=execution,
             industries=industries,
             memberships=mem,

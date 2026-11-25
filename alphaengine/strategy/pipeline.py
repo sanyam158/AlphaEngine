@@ -54,6 +54,12 @@ class PipelineStrategy:
     version: int = 1
     description: str = ""
     config: Mapping[str, Any] | None = None  # the config it was built from, if any
+    exits: Sequence[Any] = ()  # ExitRule-like objects; non-empty = rules mode
+    max_positions: int | None = None  # rules mode: equal-size slots
+
+    @property
+    def rules_mode(self) -> bool:
+        return bool(self.exits)
 
     def rebalance_dates(self, dates: pd.DatetimeIndex) -> list[pd.Timestamp]:
         return self.schedule.dates(dates)

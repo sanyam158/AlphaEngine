@@ -11,6 +11,7 @@ from alembic.config import Config
 from alphaengine import __version__
 from alphaengine.cli.backtest_commands import backtest_app
 from alphaengine.cli.data_commands import data_app, import_app, ingest_app
+from alphaengine.cli.plan_commands import plan_app
 from alphaengine.cli.portfolio_commands import notify_app, portfolio_app, scheduler_app
 from alphaengine.cli.robust_commands import robust_app
 from alphaengine.cli.strategy_commands import strategy_app
@@ -29,6 +30,7 @@ app.add_typer(robust_app, name="robust")
 app.add_typer(portfolio_app, name="portfolio")
 app.add_typer(scheduler_app, name="scheduler")
 app.add_typer(notify_app, name="notify")
+app.add_typer(plan_app, name="plan")
 
 _ROOT = Path(__file__).resolve().parents[2]
 
