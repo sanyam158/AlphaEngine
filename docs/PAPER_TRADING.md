@@ -26,13 +26,19 @@ day of the month or quarter, with signals at the close and trades the next morni
 3. On a rebalance day: computes targets and the trade list, runs risk checks, and creates orders.
 4. Sends one summary to Telegram, or to `var/data/notifications.log` if Telegram isn't set up.
 
-**Windows Task Scheduler** (run from the repo folder in PowerShell):
+**Windows Task Scheduler** (run from the repo folder in PowerShell). `run_eod_hidden.vbs` runs
+the job without a console window. Closing a visible window would kill the job.
 ```powershell
-schtasks /Create /TN "AlphaEngine EOD" /TR "$PWD\scripts\run_eod.cmd" /SC WEEKLY /D MON,TUE,WED,THU,FRI /ST 19:45
-schtasks /Create /TN "AlphaEngine EOD retry" /TR "$PWD\scripts\run_eod.cmd" /SC WEEKLY /D MON,TUE,WED,THU,FRI /ST 21:30
+$tr = "wscript.exe `"$PWD\scriptsun_eod_hidden.vbs`""
+schtasks /Create /TN "AlphaEngine EOD" /TR $tr /SC WEEKLY /D MON,TUE,WED,THU,FRI /ST 19:45 /F
+schtasks /Create /TN "AlphaEngine EOD retry" /TR $tr /SC WEEKLY /D MON,TUE,WED,THU,FRI /ST 21:30 /F
+$s = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+Set-ScheduledTask -TaskName "AlphaEngine EOD" -Settings $s; Set-ScheduledTask -TaskName "AlphaEngine EOD retry" -Settings $s
 ```
-The second run is a no-op if the first succeeded. You can also keep `alphaengine scheduler start`
-running; it retries every 30 minutes until 23:30.
+The retry is a no-op once the day succeeded. With StartWhenAvailable, a run missed while the PC
+was off happens as soon as it's back on. Output goes to `var\eod.log`. Tasks run the code that is
+**checked out in this folder**, so keep a branch with all phases checked out. You can also keep
+`alphaengine scheduler start` running instead; it retries every 30 minutes until 23:30.
 
 **Telegram**: create a bot with @BotFather, send it a message, get your chat id from
 `https://api.telegram.org/bot<TOKEN>/getUpdates`, then add to `.env`:
