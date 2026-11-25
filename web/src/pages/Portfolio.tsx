@@ -16,6 +16,10 @@ export default function PortfolioPage() {
     queryKey: ["tax", name],
     queryFn: () => unwrap(api.GET("/api/portfolios/{name}/tax", { params: { path: { name } } })),
   });
+  const harvest = useQuery({
+    queryKey: ["harvest", name],
+    queryFn: () => unwrap(api.GET("/api/portfolios/{name}/harvest", { params: { path: { name } } })),
+  });
   const [plan, setPlan] = useState<RebalanceOut | null>(null);
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["portfolio", name] });
@@ -90,6 +94,19 @@ export default function PortfolioPage() {
                 <td>{o.fill_price ? num(o.fill_price) : "–"}</td><td><StatusBadge s={o.status} /></td></tr>
             ))}</tbody>
           </table></div>
+        </Card>
+        <Card title="Harvesting ideas (this FY)">
+          {harvest.data?.length ? (
+            <div className="table-wrap"><table>
+              <thead><tr><th>Type</th><th>Symbol</th><th>Qty</th><th>Gain</th><th>Tax now</th><th>Costs</th><th className="text">Why</th></tr></thead>
+              <tbody>{harvest.data.map((h) => (
+                <tr key={h.kind + h.symbol}><td>{h.kind === "loss" ? "loss" : "LTCG"}</td><td>{h.symbol}</td><td>{h.quantity}</td>
+                  <td className={tone(h.gain)}>{inr(h.gain)}</td><td className={tone(-h.tax_change)}>{inr(h.tax_change)}</td>
+                  <td>{inr(h.round_trip_cost)}</td><td className="text muted">{h.note}</td></tr>
+              ))}</tbody>
+            </table></div>
+          ) : <Empty>Nothing worth harvesting right now.</Empty>}
+          <p className="muted">Sell and buy back to keep exposure. Check large amounts with a tax professional.</p>
         </Card>
         <Card title="Capital-gains tax (estimate)">
           {tax.data?.length ? (

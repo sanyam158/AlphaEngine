@@ -56,6 +56,7 @@ class PipelineStrategy:
     config: Mapping[str, Any] | None = None  # the config it was built from, if any
     exits: Sequence[Any] = ()  # ExitRule-like objects; non-empty = rules mode
     max_positions: int | None = None  # rules mode: equal-size slots
+    cooldown_days: int = 5  # rules mode: no re-entry this many trading days after an exit
 
     @property
     def rules_mode(self) -> bool:

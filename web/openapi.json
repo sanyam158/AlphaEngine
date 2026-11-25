@@ -1002,6 +1002,68 @@
     }
    }
   },
+  "/api/portfolios/{name}/harvest": {
+   "get": {
+    "tags": [
+     "portfolios"
+    ],
+    "summary": "Harvest",
+    "operationId": "harvest_api_portfolios__name__harvest_get",
+    "parameters": [
+     {
+      "name": "name",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Name"
+      }
+     },
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/HarvestIdeaOut"
+         },
+         "title": "Response Harvest Api Portfolios  Name  Harvest Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
   "/api/portfolios/{name}/tax": {
    "get": {
     "tags": [
@@ -1311,6 +1373,65 @@
        "application/json": {
         "schema": {
          "$ref": "#/components/schemas/JournalOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/api/plan/goal": {
+   "post": {
+    "tags": [
+     "planning"
+    ],
+    "summary": "Goal",
+    "operationId": "goal_api_plan_goal_post",
+    "parameters": [
+     {
+      "name": "x-api-key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "X-Api-Key"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/GoalRequest"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/GoalOut"
         }
        }
       }
@@ -1902,6 +2023,178 @@
     ],
     "title": "FillRequest"
    },
+   "GoalBand": {
+    "properties": {
+     "year": {
+      "type": "integer",
+      "title": "Year"
+     },
+     "p10": {
+      "type": "number",
+      "title": "P10"
+     },
+     "p50": {
+      "type": "number",
+      "title": "P50"
+     },
+     "p90": {
+      "type": "number",
+      "title": "P90"
+     }
+    },
+    "type": "object",
+    "required": [
+     "year",
+     "p10",
+     "p50",
+     "p90"
+    ],
+    "title": "GoalBand"
+   },
+   "GoalOut": {
+    "properties": {
+     "probability": {
+      "type": "number",
+      "title": "Probability"
+     },
+     "target_nominal": {
+      "type": "number",
+      "title": "Target Nominal"
+     },
+     "p10": {
+      "type": "number",
+      "title": "P10"
+     },
+     "p50": {
+      "type": "number",
+      "title": "P50"
+     },
+     "p90": {
+      "type": "number",
+      "title": "P90"
+     },
+     "contributed": {
+      "type": "number",
+      "title": "Contributed"
+     },
+     "required_sip": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Required Sip"
+     },
+     "source": {
+      "type": "string",
+      "title": "Source"
+     },
+     "history_months": {
+      "type": "integer",
+      "title": "History Months"
+     },
+     "bands": {
+      "items": {
+       "$ref": "#/components/schemas/GoalBand"
+      },
+      "type": "array",
+      "title": "Bands"
+     }
+    },
+    "type": "object",
+    "required": [
+     "probability",
+     "target_nominal",
+     "p10",
+     "p50",
+     "p90",
+     "contributed",
+     "required_sip",
+     "source",
+     "history_months",
+     "bands"
+    ],
+    "title": "GoalOut"
+   },
+   "GoalRequest": {
+    "properties": {
+     "target": {
+      "type": "number",
+      "exclusiveMinimum": 0.0,
+      "title": "Target",
+      "description": "In today's rupees"
+     },
+     "years": {
+      "type": "integer",
+      "maximum": 60.0,
+      "minimum": 1.0,
+      "title": "Years"
+     },
+     "current": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Current",
+      "default": 0
+     },
+     "monthly_sip": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Monthly Sip",
+      "default": 0
+     },
+     "step_up": {
+      "type": "number",
+      "maximum": 0.5,
+      "minimum": 0.0,
+      "title": "Step Up",
+      "default": 0
+     },
+     "inflation": {
+      "type": "number",
+      "maximum": 0.2,
+      "minimum": 0.0,
+      "title": "Inflation",
+      "default": 0.06
+     },
+     "after_tax": {
+      "type": "boolean",
+      "title": "After Tax",
+      "default": true
+     },
+     "success": {
+      "type": "number",
+      "exclusiveMaximum": 1.0,
+      "exclusiveMinimum": 0.0,
+      "title": "Success",
+      "default": 0.8
+     },
+     "run_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Run Id"
+     },
+     "symbol": {
+      "type": "string",
+      "title": "Symbol",
+      "default": "NIFTYBEES"
+     }
+    },
+    "type": "object",
+    "required": [
+     "target",
+     "years"
+    ],
+    "title": "GoalRequest"
+   },
    "HTTPValidationError": {
     "properties": {
      "detail": {
@@ -1914,6 +2207,68 @@
     },
     "type": "object",
     "title": "HTTPValidationError"
+   },
+   "HarvestIdeaOut": {
+    "properties": {
+     "kind": {
+      "type": "string",
+      "enum": [
+       "loss",
+       "ltcg_gain"
+      ],
+      "title": "Kind"
+     },
+     "symbol": {
+      "type": "string",
+      "title": "Symbol"
+     },
+     "quantity": {
+      "type": "integer",
+      "title": "Quantity"
+     },
+     "price": {
+      "type": "number",
+      "title": "Price"
+     },
+     "gain": {
+      "type": "number",
+      "title": "Gain"
+     },
+     "long_term": {
+      "type": "boolean",
+      "title": "Long Term"
+     },
+     "tax_change": {
+      "type": "number",
+      "title": "Tax Change"
+     },
+     "round_trip_cost": {
+      "type": "number",
+      "title": "Round Trip Cost"
+     },
+     "net_benefit": {
+      "type": "number",
+      "title": "Net Benefit"
+     },
+     "note": {
+      "type": "string",
+      "title": "Note"
+     }
+    },
+    "type": "object",
+    "required": [
+     "kind",
+     "symbol",
+     "quantity",
+     "price",
+     "gain",
+     "long_term",
+     "tax_change",
+     "round_trip_cost",
+     "net_benefit",
+     "note"
+    ],
+    "title": "HarvestIdeaOut"
    },
    "Health": {
     "properties": {

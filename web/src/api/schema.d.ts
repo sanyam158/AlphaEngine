@@ -247,6 +247,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/portfolios/{name}/harvest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Harvest */
+        get: operations["harvest_api_portfolios__name__harvest_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/portfolios/{name}/tax": {
         parameters: {
             query?: never;
@@ -310,6 +327,23 @@ export interface paths {
         put?: never;
         /** Add Journal */
         post: operations["add_journal_api_journal_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/plan/goal": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Goal */
+        post: operations["goal_api_plan_goal_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -511,10 +545,117 @@ export interface components {
             /** Charges */
             charges?: number | null;
         };
+        /** GoalBand */
+        GoalBand: {
+            /** Year */
+            year: number;
+            /** P10 */
+            p10: number;
+            /** P50 */
+            p50: number;
+            /** P90 */
+            p90: number;
+        };
+        /** GoalOut */
+        GoalOut: {
+            /** Probability */
+            probability: number;
+            /** Target Nominal */
+            target_nominal: number;
+            /** P10 */
+            p10: number;
+            /** P50 */
+            p50: number;
+            /** P90 */
+            p90: number;
+            /** Contributed */
+            contributed: number;
+            /** Required Sip */
+            required_sip: number | null;
+            /** Source */
+            source: string;
+            /** History Months */
+            history_months: number;
+            /** Bands */
+            bands: components["schemas"]["GoalBand"][];
+        };
+        /** GoalRequest */
+        GoalRequest: {
+            /**
+             * Target
+             * @description In today's rupees
+             */
+            target: number;
+            /** Years */
+            years: number;
+            /**
+             * Current
+             * @default 0
+             */
+            current: number;
+            /**
+             * Monthly Sip
+             * @default 0
+             */
+            monthly_sip: number;
+            /**
+             * Step Up
+             * @default 0
+             */
+            step_up: number;
+            /**
+             * Inflation
+             * @default 0.06
+             */
+            inflation: number;
+            /**
+             * After Tax
+             * @default true
+             */
+            after_tax: boolean;
+            /**
+             * Success
+             * @default 0.8
+             */
+            success: number;
+            /** Run Id */
+            run_id?: string | null;
+            /**
+             * Symbol
+             * @default NIFTYBEES
+             */
+            symbol: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HarvestIdeaOut */
+        HarvestIdeaOut: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "loss" | "ltcg_gain";
+            /** Symbol */
+            symbol: string;
+            /** Quantity */
+            quantity: number;
+            /** Price */
+            price: number;
+            /** Gain */
+            gain: number;
+            /** Long Term */
+            long_term: boolean;
+            /** Tax Change */
+            tax_change: number;
+            /** Round Trip Cost */
+            round_trip_cost: number;
+            /** Net Benefit */
+            net_benefit: number;
+            /** Note */
+            note: string;
         };
         /** Health */
         Health: {
@@ -1413,6 +1554,39 @@ export interface operations {
             };
         };
     };
+    harvest_api_portfolios__name__harvest_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-api-key"?: string | null;
+            };
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HarvestIdeaOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     tax_api_portfolios__name__tax_get: {
         parameters: {
             query?: never;
@@ -1572,6 +1746,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["JournalOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    goal_api_plan_goal_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "x-api-key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoalRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GoalOut"];
                 };
             };
             /** @description Validation Error */

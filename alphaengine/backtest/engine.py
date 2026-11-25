@@ -120,6 +120,8 @@ class _Sim:
         self.max_positions = int(getattr(strategy, "max_positions", None) or 10)
         self.adj = md.close.to_numpy(dtype=float)
         self.positions: dict[str, dict[str, Any]] = {}  # symbol -> entry state
+        self.cooldown = int(getattr(strategy, "cooldown_days", 0) or 0)
+        self.exited_at: dict[str, int] = {}  # symbol -> row of its last rule exit
         self.fmv = self._fmv_lookup()
 
     # ------------------------------------------------------------------ setup helpers
@@ -247,6 +249,8 @@ class _Sim:
             self.shares[o.symbol] -= qty
             if self.shares[o.symbol] <= 0:
                 self.positions.pop(o.symbol, None)
+                if o.reason.startswith("exit:"):
+                    self.exited_at[o.symbol] = i
             self.cash += float(price) * qty - float(ch.total)
             self._record(d, o, qty, price, ch)
             if qty < o.quantity and self.shares[o.symbol] > 0:
@@ -373,7 +377,10 @@ class _Sim:
         busy = {s for s, q in self.shares.items() if q > 0} | {o.symbol for o in self.pending}
         slots = self.max_positions - len(busy)
         size = total / self.max_positions
-        for sym in [s for s in target.weights if s not in busy and s in self.col][: max(slots, 0)]:
+        i = self.row[d]
+        cooling = {s for s, r in self.exited_at.items() if i - r < self.cooldown}
+        fresh = [s for s in target.weights if s not in busy and s not in cooling and s in self.col]
+        for sym in fresh[: max(slots, 0)]:
             if size >= self.cfg.min_trade_value:
                 self.pending.append(_Order(sym, Side.BUY, value=size, reason="entry"))
 

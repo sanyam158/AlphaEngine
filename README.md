@@ -17,7 +17,8 @@ See [docs/PLAN.md](docs/PLAN.md) for the architecture and the phased roadmap.
 - [x] Phase 5: robustness: sweeps, walk-forward, deflated Sharpe, PBO, bootstrap, fast engine ([guide](docs/ROBUSTNESS.md))
 - [x] Phase 6: paper/manual portfolios, tax-aware planner, daily job, Telegram ([guide](docs/PAPER_TRADING.md))
 - [x] Phase 7: FastAPI + React dashboard, journal ([guide](docs/DASHBOARD.md))
-- [ ] Phase 8–9: swing trading, broker integration
+- [x] Phase 8: swing trading (exit rules), tax-loss & LTCG harvesting, goal planner ([guide](docs/SWING_AND_PLANNING.md))
+- [ ] Phase 9: broker integration (Kite: holdings sync, approval-gated orders)
 
 ## Quick start
 ```bash

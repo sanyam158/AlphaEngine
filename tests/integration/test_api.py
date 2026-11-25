@@ -197,3 +197,16 @@ def test_auth(ctx: AppContext, monkeypatch: pytest.MonkeyPatch) -> None:
     get_settings.cache_clear()
     remote = TestClient(create_app(build_context(), web_dist=None), client=("203.0.113.5", 5000))
     assert remote.get("/api/health").status_code == 403
+
+
+def test_harvest_and_goal_endpoints(client: TestClient) -> None:
+    client.post("/api/portfolios", json={"name": "hv", "strategy": "fixed_mix", "broker": "manual"})
+    assert client.get("/api/portfolios/hv/harvest").json() == []  # nothing held yet
+    assert client.get("/api/portfolios/ghost/harvest").status_code == 404
+    short = client.post("/api/plan/goal", json={"target": 1e7, "years": 10, "monthly_sip": 1e4})
+    assert short.status_code == 422  # the synthetic store has < 3 years of history
+    assert "3 years" in short.json()["detail"]
+    assert client.post("/api/plan/goal", json={"target": 1e7, "years": 0}).status_code == 422
+    rejected = client.post("/api/portfolios", json={"name": "sw", "strategy": "swing_breakout"})
+    assert rejected.status_code == 409
+    assert "backtest-only" in rejected.json()["detail"]

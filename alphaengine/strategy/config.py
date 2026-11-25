@@ -70,6 +70,7 @@ class PipelineConfig(_Base):
     overlays: list[StageConfig] = Field(default_factory=list)
     exits: list[StageConfig] = Field(default_factory=list)  # rules mode (swing trading)
     max_positions: int | None = Field(default=None, ge=1, le=200)
+    cooldown_days: int = Field(default=5, ge=0, le=250)
 
 
 class BlendPart(BaseModel):
@@ -145,6 +146,7 @@ def build_strategy(cfg: AnyConfig, *, _depth: int = 0) -> Strategy:
         config=raw,
         exits=[_build_stage("exit", x, f"exits[{i}]") for i, x in enumerate(cfg.exits)],
         max_positions=cfg.max_positions or (10 if cfg.exits else None),
+        cooldown_days=cfg.cooldown_days,
     )
 
 
