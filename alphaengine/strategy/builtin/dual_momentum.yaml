@@ -1,0 +1,13 @@
+# Trend-following asset allocation (Antonacci-style dual momentum), ~1 decision a month.
+# Relative momentum picks the strongest asset; absolute momentum moves to cash when even the
+# best one hasn't beaten an approximate T-bill return (min_score ≈ 6.5% over 12 months).
+name: dual_momentum
+version: 1
+description: Hold the strongest of Nifty 50 / Next 50 / Bank / Gold by 12-month total return; cash if none beats ~T-bills.
+schedule: monthly
+universe: {type: static, symbols: [NIFTYBEES, JUNIORBEES, BANKBEES, GOLDBEES]}
+filters:
+  - {type: min_history, days: 252}
+scorer: {type: feature, feature: momentum, params: {lookback: 252, skip: 0}}
+selector: {type: top_n, n: 1, min_score: 0.065}
+weighter: {type: equal}

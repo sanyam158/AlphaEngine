@@ -140,3 +140,19 @@ class DataQualityIssue(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+
+
+class StrategyConfigRecord(Base):
+    """Immutable store of strategy configs: (name, version) maps to exactly one content hash."""
+
+    __tablename__ = "strategy_configs"
+    __table_args__ = (UniqueConstraint("name", "version"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    config_hash: Mapped[str] = mapped_column(String(16), nullable=False, unique=True)
+    config: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )

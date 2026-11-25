@@ -27,4 +27,6 @@ The master plan and phase roadmap live in `docs/PLAN.md`; keep it updated when s
   tests live in `tests/network` and run only with `ALPHAENGINE_RUN_NETWORK=1`.
 - New price sources implement `DailyBarSource` and must be added to `tests/contract`.
 - Curated prices are raw; adjust only at read time (`data.prices.load_prices`). See docs/DATA.md.
+- New features go in `features/library.py` and must get a `SMALL` entry in
+  `tests/unit/test_features.py` (causality test). New stages register via `@component`.
 - Work on feature branches per phase; never commit `.env` or data under `var/`.

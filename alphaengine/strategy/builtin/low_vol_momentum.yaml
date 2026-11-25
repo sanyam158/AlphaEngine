@@ -1,0 +1,21 @@
+# Defensive equity sleeve: blend of momentum and low volatility, quarterly, inverse-vol sized.
+name: low_vol_momentum
+version: 1
+description: Top 25 of the 200 most liquid stocks by momentum + low volatility; quarterly; inverse-volatility weights.
+schedule: quarterly
+universe: {type: liquidity, top_n: 200, window: 126}
+filters:
+  - {type: min_price, value: 20}
+  - {type: min_history, days: 273}
+  # Data sanity: an unexplained >35% one-day move is almost always a missing split record.
+  - {type: feature, feature: max_abs_return, params: {window: 252}, op: "<", value: 0.35}
+scorer:
+  type: composite
+  factors:
+    - {feature: momentum, params: {lookback: 252, skip: 21}, weight: 1.0}
+    - {feature: volatility, params: {window: 252}, weight: 1.0, higher_is_better: false}
+selector: {type: top_n, n: 25, buffer: 50}
+weighter: {type: inverse_vol, window: 126}
+overlays:
+  - {type: max_weight, cap: 0.08}
+  - {type: sector_cap, cap: 0.3}

@@ -53,6 +53,7 @@ def load_prices(
     *,
     adjust: Adjust = "split",
     resolve_renames: bool = True,
+    columns: Sequence[str] | None = None,
 ) -> pd.DataFrame:
     """Long bars frame. With ``resolve_renames`` rows are labelled with the ISIN's *current*
     symbol, so a renamed company has one continuous history."""
@@ -62,7 +63,14 @@ def load_prices(
         earliest_isin = _earliest_isin_by_symbol(s) if resolve_renames else {}
         actions = load_corporate_actions(s)
     read_start = start - _BUFFER if start else None
-    bars = store.read(read_syms, read_start, end)
+    cols = None
+    if columns is not None:  # always keep what renames/adjustment need
+        cols = sorted(
+            set(columns)
+            | {"isin", "close"}
+            | ({"prev_close"} if "prev_close" in columns else set())
+        )
+    bars = store.read(read_syms, read_start, end, columns=cols)
     if resolve_renames and not bars.empty and mapping:
         missing_isin = bars["isin"].isna()
         if missing_isin.any():  # pre-2012 files carry no ISIN: infer it from the symbol

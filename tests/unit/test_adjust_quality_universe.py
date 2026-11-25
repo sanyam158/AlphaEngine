@@ -58,6 +58,11 @@ class TestAdjustment:
         with pytest.raises(ValueError, match="unknown adjustment"):
             apply_adjustment(SPLIT_BARS, SPLIT, "weird")  # type: ignore[arg-type]
 
+    def test_dividend_after_window_is_ignored(self) -> None:
+        bars = make_bars({"AAA": [10, 10, 10]})
+        acts = _acts([("AAA", "2030-01-01", "DIVIDEND", None, 50.0)])  # > price, but later
+        assert (adjustment_factors(bars, acts)["tr_factor"] == 1).all()
+
     def test_implausible_or_early_dividend_skipped(self) -> None:
         bars = make_bars({"AAA": [10, 10, 10]})
         acts = _acts(

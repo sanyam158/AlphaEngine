@@ -159,3 +159,58 @@ def make_bars(
     from alphaengine.data.schema import coerce_bars
 
     return coerce_bars(pd.DataFrame(rows))
+
+
+def random_walk_bars(
+    n_symbols: int = 8,
+    n_days: int = 300,
+    seed: int = 7,
+    start: str = "2023-01-02",
+    gap_prob: float = 0.02,
+) -> pd.DataFrame:
+    """Raw bars for ``S00``.. with random-walk prices, varying volume and random missing days."""
+    import numpy as np
+
+    rng = np.random.default_rng(seed)
+    dates = pd.bdate_range(start, periods=n_days)
+    rows = []
+    for i in range(n_symbols):
+        sym = f"S{i:02d}"
+        drift = rng.normal(0.0005, 0.0005)
+        closes = 100 * np.exp(np.cumsum(rng.normal(drift, 0.02, n_days)))
+        for d, c in zip(dates, closes, strict=True):
+            if rng.random() < gap_prob:
+                continue
+            o = c * (1 + rng.normal(0, 0.005))
+            vol = int(rng.integers(1_000, 100_000) * (i + 1))
+            rows.append(
+                {
+                    "date": d,
+                    "symbol": sym,
+                    "isin": f"INE{i:03d}A01011",
+                    "series": "EQ",
+                    "open": o,
+                    "high": max(o, c) * 1.01,
+                    "low": min(o, c) * 0.99,
+                    "close": c,
+                    "prev_close": c,
+                    "volume": vol,
+                    "value": vol * c,
+                    "trades": 10,
+                }
+            )
+    from alphaengine.data.schema import coerce_bars
+
+    return coerce_bars(pd.DataFrame(rows))
+
+
+def market(bars: pd.DataFrame | None = None, *, benchmark: list[float] | None = None, **kw: object):  # type: ignore[no-untyped-def]
+    """MarketData from bars (default: random walk) with an optional NIFTY50 benchmark."""
+    from alphaengine.features.data import MarketData
+
+    bars = bars if bars is not None else random_walk_bars()
+    bench = None
+    if benchmark is not None:
+        dates = sorted(bars["date"].unique())[: len(benchmark)]
+        bench = pd.DataFrame({"date": dates, "symbol": "NIFTY50", "close": benchmark[: len(dates)]})
+    return MarketData.from_bars(bars, benchmark_bars=bench, **kw)  # type: ignore[arg-type]

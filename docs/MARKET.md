@@ -12,8 +12,8 @@ from alphaengine.market.costs import CostModel, ZERODHA, FLAT_20
 
 m = CostModel(ZERODHA)
 c = m.charges(Side.BUY, 100, Decimal("1000"), date(2026, 1, 15))
-c.total          # 118.74 -> STT 100, txn 3.07, SEBI 0.10, stamp 15.00, GST 0.57
-c.tax_deductible # 18.74  -> everything except STT counts toward cost basis
+c.total  # 118.74 -> STT 100, txn 3.07, SEBI 0.10, stamp 15.00, GST 0.57
+c.tax_deductible  # 18.74  -> everything except STT counts toward cost basis
 ```
 - Rates are versioned by effective date (`STATUTORY_SCHEDULE`), so a 2012 backtest pays the
   0.125% STT of the time. The table at the top of `costs.py` lists every rate and its source.

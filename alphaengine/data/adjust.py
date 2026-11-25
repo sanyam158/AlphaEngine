@@ -67,7 +67,10 @@ def adjustment_factors(bars: pd.DataFrame, actions: pd.DataFrame) -> pd.DataFram
         for ex, amt in a.loc[a["kind"] == "DIVIDEND", ["ex_date", "amount"]].itertuples(
             index=False
         ):
-            pos = np.searchsorted(d, np.datetime64(ex, "ns"), side="left") - 1
+            ex64 = np.datetime64(ex, "ns")
+            if ex64 > d[-1]:
+                continue  # after the window: would rescale every bar equally (no effect on returns)
+            pos = np.searchsorted(d, ex64, side="left") - 1
             if pos < 0:
                 continue  # no price before ex-date in this window
             prev = closes[pos]

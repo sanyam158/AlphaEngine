@@ -1,0 +1,8 @@
+# Core + satellite: 70% trend-following asset allocation, 30% stock momentum.
+name: core_satellite
+version: 1
+description: 70% dual_momentum + 30% momentum_top20, evaluated monthly.
+schedule: monthly
+blend:
+  - {strategy: dual_momentum, weight: 0.7}
+  - {strategy: momentum_top20, weight: 0.3}

@@ -3,11 +3,19 @@ from __future__ import annotations
 from collections.abc import Iterator
 
 import pytest
+from hypothesis import HealthCheck, settings
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from alphaengine.config.settings import get_settings
 from alphaengine.data.db import Base, make_engine, make_session_factory
+
+# DataFrame-building property tests can exceed Hypothesis's 200ms per-example deadline on a busy
+# machine or CI runner; correctness, not speed, is what they check.
+settings.register_profile(
+    "alphaengine", deadline=None, suppress_health_check=[HealthCheck.too_slow]
+)
+settings.load_profile("alphaengine")
 
 
 @pytest.fixture(autouse=True)

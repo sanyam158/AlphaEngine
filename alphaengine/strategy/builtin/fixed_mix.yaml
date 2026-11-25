@@ -1,0 +1,9 @@
+# Baseline 2: a static large-cap / next-50 / gold mix, rebalanced quarterly.
+name: fixed_mix
+version: 1
+description: 60% Nifty 50, 20% Nifty Next 50, 20% gold ETFs; quarterly rebalance.
+schedule: quarterly
+universe: {type: static, symbols: [NIFTYBEES, JUNIORBEES, GOLDBEES]}
+weighter:
+  type: fixed
+  weights_by_symbol: {NIFTYBEES: 0.6, JUNIORBEES: 0.2, GOLDBEES: 0.2}
