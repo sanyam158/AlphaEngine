@@ -189,3 +189,7 @@ def test_ingest_log(session_factory: SF) -> None:
             date(2024, 1, 1),
             date(2024, 1, 2),
         }
+        # a recent "no data" day is fetched again (the file may not have been published yet)
+        assert completed_days(
+            s, "x", date(2024, 1, 1), date(2024, 1, 31), recheck_after=date(2024, 1, 2)
+        ) == {date(2024, 1, 1)}

@@ -9,7 +9,7 @@ from __future__ import annotations
 import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 
 import pandas as pd
 from sqlalchemy.orm import Session, sessionmaker
@@ -127,7 +127,14 @@ class BhavcopyIngestor:
         summary = IngestSummary(run_id=new_id("ing"))
         log.info("bhavcopy ingest start", run_id=summary.run_id, start=str(start), end=str(end))
         with session_scope(self.sf) as s:
-            done = set() if force else completed_days(s, self.source.name, start, end)
+            # Missing files from the last week are re-checked (NSE publishes in the evening).
+            done = (
+                set()
+                if force
+                else completed_days(
+                    s, self.source.name, start, end, recheck_after=end - timedelta(days=7)
+                )
+            )
         candidates = candidate_days(start, end, include_weekends=include_weekends)
         days = [d for d in candidates if d not in done]
         summary.days_skipped = len(candidates) - len(days)

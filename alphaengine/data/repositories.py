@@ -293,14 +293,22 @@ def membership_history_start(session: Session, index_name: str) -> date | None:
 DONE_STATUSES = ("ok", "no_data")
 
 
-def completed_days(session: Session, source: str, start: date, end: date) -> set[date]:
-    stmt = select(IngestLog.trade_date).where(
+def completed_days(
+    session: Session, source: str, start: date, end: date, *, recheck_after: date | None = None
+) -> set[date]:
+    """Days not worth fetching again. ``no_data`` days on or after ``recheck_after`` are *not*
+    included: a file missing yesterday may simply not have been published yet."""
+    stmt = select(IngestLog.trade_date, IngestLog.status).where(
         IngestLog.source == source,
         IngestLog.trade_date >= start,
         IngestLog.trade_date <= end,
         IngestLog.status.in_(DONE_STATUSES),
     )
-    return set(session.scalars(stmt))
+    return {
+        d
+        for d, status in session.execute(stmt)
+        if not (status == "no_data" and recheck_after is not None and d >= recheck_after)
+    }
 
 
 def record_ingest(
