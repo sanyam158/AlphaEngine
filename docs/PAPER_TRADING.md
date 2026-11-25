@@ -29,7 +29,7 @@ day of the month or quarter, with signals at the close and trades the next morni
 **Windows Task Scheduler** (run from the repo folder in PowerShell). `run_eod_hidden.vbs` runs
 the job without a console window. Closing a visible window would kill the job.
 ```powershell
-$tr = "wscript.exe `"$PWD\scriptsun_eod_hidden.vbs`""
+$tr = "wscript.exe `"$PWD\scripts\run_eod_hidden.vbs`""
 schtasks /Create /TN "AlphaEngine EOD" /TR $tr /SC WEEKLY /D MON,TUE,WED,THU,FRI /ST 19:45 /F
 schtasks /Create /TN "AlphaEngine EOD retry" /TR $tr /SC WEEKLY /D MON,TUE,WED,THU,FRI /ST 21:30 /F
 $s = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
