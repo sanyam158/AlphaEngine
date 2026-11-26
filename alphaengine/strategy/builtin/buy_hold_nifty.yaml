@@ -1,0 +1,8 @@
+# Baseline 1: own the Nifty 50 (via NIFTYBEES) and never trade. Everything must beat this
+# after costs and taxes to be worth running.
+name: buy_hold_nifty
+version: 1
+description: 100% NIFTYBEES, bought once and held.
+schedule: yearly
+universe: {type: static, symbols: [NIFTYBEES]}
+weighter: {type: fixed, weights_by_symbol: {NIFTYBEES: 1.0}}

@@ -1,0 +1,20 @@
+# Satellite: cross-sectional momentum on the 200 most liquid stocks (survivorship-free).
+# Buy the top 20 by risk-adjusted 12-1 momentum; keep a holding while it stays in the top 40
+# (hysteresis keeps turnover and taxes down). Halve exposure when Nifty is below its 200-day
+# average.
+name: momentum_top20
+version: 1
+description: Top 20 of the 200 most liquid NSE stocks by risk-adjusted 12-1 momentum, monthly, with a trend regime filter.
+schedule: monthly
+universe: {type: liquidity, top_n: 200, window: 126}
+filters:
+  - {type: min_price, value: 20}
+  - {type: min_history, days: 273}
+  # Data sanity: an unexplained >35% one-day move is almost always a missing split record.
+  - {type: feature, feature: max_abs_return, params: {window: 252}, op: "<", value: 0.35}
+scorer: {type: feature, feature: risk_adj_momentum, params: {lookback: 252, skip: 21, vol_window: 126}}
+selector: {type: top_n, n: 20, buffer: 40}
+weighter: {type: equal}
+overlays:
+  - {type: regime, benchmark: NIFTY50, sma: 200, risk_off_exposure: 0.5}
+  - {type: max_weight, cap: 0.1}
